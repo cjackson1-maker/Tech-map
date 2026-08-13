@@ -127,7 +127,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
     <option value="5" selected>Top 5</option>
     <option value="10">Top 10</option>
   </select>
-  <button id="find-btn" onclick="findNearest()">&#128205; Find Nearest</button>
+  <button id="find-btn" onclick="findNearest()">📍 Find Nearest</button>
   <button id="clear-btn" onclick="clearProximity()">&#10005; Clear</button>
   <span id="prox-status"></span>
 </div>
@@ -175,7 +175,14 @@ function makePopup(t, driveInfo=null) {
   const em = t.email?`<div class="p-row"><span class="ic">&#9993;</span><a href="mailto:${t.email}">${t.email}</a></div>`:'';
   const terr = t.territory?`<div class="p-terr">&#128506; ${t.territory}</div>`:'';
   const note = t.notes?`<div class="p-note">&#128221; ${t.notes}</div>`:'';
-  const drive = driveInfo ? `<div class="p-drive">&#128664; ~${driveInfo.time} drive <span class="dr-dist">(${driveInfo.miles} mi)</span></div>` : '';
+  const drive = driveInfo ? `<div class="p-drive" style="flex-direction:column;gap:4px">
+    <div>&#128664; ~${driveInfo.time} drive &nbsp;<span class="dr-dist">${driveInfo.miles} mi</span></div>
+    <div style="display:flex;gap:12px;font-size:11px;margin-top:2px">
+      <span>&#8594; One way: <strong style="color:#90cdf4">${estCost(driveInfo.miles)}</strong></span>
+      <span>&#8644; Round trip: <strong style="color:${rtCostColor(driveInfo.miles)}">${estCost(driveInfo.miles * 2)}</strong>${(driveInfo.miles*0.76*2)>200?' <span style="color:#fc8181;font-size:10px">⚠ over $200</span>':''}</span>
+      <span style="color:#4a5568">@ $0.76/mi</span>
+    </div>
+  </div>` : '';
   return `${drive}<div class="p-name">${t.name}</div><div class="p-company">${t.company||''}</div>
     <span class="p-rating ${RATING_CLASS[t.rating]}">${RATING_LABEL[t.rating]}</span>
     ${ph}${em}<div class="p-loc">&#128205; ${loc}${t.zip?' &middot; ZIP '+t.zip:''}</div>${terr}${note}`;
@@ -245,6 +252,18 @@ function estDrive(miles) {
   const h = Math.floor(hrs), m = Math.round((hrs-h)*60);
   return m>0 ? `${h}h ${m}m` : `${h}h`;
 }
+function estCost(miles) {
+  const cost = miles * 0.76;
+  return cost < 1000 ? `$${cost.toFixed(0)}` : `$${(cost/1000).toFixed(1)}k`;
+}
+function costColor(miles, isRoundTrip) {
+  const cost = miles * 0.76 * (isRoundTrip ? 2 : 1);
+  if (isRoundTrip && cost > 200) return '#fc8181'; // red
+  return '#68d391'; // green
+}
+function rtCostColor(miles) {
+  return (miles * 0.76 * 2) > 200 ? '#fc8181' : '#68d391';
+}
 
 async function geocodeLocation(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=us&format=json&limit=1`;
@@ -267,7 +286,7 @@ async function findNearest() {
   const geo = await geocodeLocation(query);
   if (!geo) {
     document.getElementById('prox-status').textContent='Location not found. Try a city name or ZIP.';
-    btn.disabled=false; btn.textContent='&#128205; Find Nearest';
+    btn.disabled=false; btn.innerHTML='📍 Find Nearest';
     return;
   }
 
@@ -289,7 +308,7 @@ async function findNearest() {
     .map(m=>{
       const t=m._tech;
       const miles=distMiles(geo.lat,geo.lng,t._lat,t._lng);
-      return {m,t,miles,time:estDrive(miles)};
+      return {m,t,miles,time:estDrive(miles),cost:estCost(miles)};
     })
     .sort((a,b)=>a.miles-b.miles)
     .slice(0,topN);
@@ -325,7 +344,14 @@ async function findNearest() {
         <span class="res-rating ${RATING_CLASS[s.t.rating]}" style="margin-left:auto">${s.t.rating}</span>
       </div>
       <div class="res-company">${s.t.company||''}</div>
-      <div><span class="res-drive">&#128664; ~${s.time}</span><span class="res-dist">${Math.round(s.miles)} mi away</span></div>
+      <div style="margin-top:4px">
+        <span class="res-drive">&#128664; ~${s.time}</span>
+        <span class="res-dist">&nbsp;${Math.round(s.miles)} mi</span>
+      </div>
+      <div style="display:flex;gap:10px;font-size:11px;margin-top:4px;flex-wrap:wrap">
+        <span style="color:#a0aec0">&#8594; One way: <strong style="color:#68d391">${estCost(s.miles)}</strong></span>
+        <span style="color:#a0aec0">&#8644; Round trip: <strong style="color:${rtCostColor(s.miles)}">${estCost(s.miles * 2)}</strong>${(s.miles*0.76*2)>200?' <span style="color:#fc8181;font-size:10px">⚠</span>':''}</span>
+      </div>
       <div style="font-size:11px;color:#718096;margin-top:2px">&#128205; ${[s.t.city,s.t.state].filter(Boolean).join(', ')||s.t.state||'—'}</div>
       <div class="res-contact">
         ${s.t.phone?`<a href="tel:${s.t.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()">&#128222; ${s.t.phone}</a>`:''}
@@ -343,7 +369,7 @@ async function findNearest() {
   document.getElementById('result-panel').style.display='flex';
   document.getElementById('clear-btn').style.display='inline-block';
   document.getElementById('prox-status').textContent=`${scored.length} nearest found`;
-  btn.disabled=false; btn.textContent='&#128205; Find Nearest';
+  btn.disabled=false; btn.innerHTML='📍 Find Nearest';
 
   // Fit map to show search point + results
   const bounds=L.latLngBounds([[geo.lat,geo.lng],...scored.map(s=>[s.t._lat,s.t._lng])]);
