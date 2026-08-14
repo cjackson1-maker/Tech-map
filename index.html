@@ -141,11 +141,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
 
 /* Help Modal */
 #help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;display:none;align-items:center;justify-content:center}
-#help-box{background:#1a1f2e;border:1px solid #2d3748;border-radius:14px;width:680px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+#help-box{background:#1a1f2e;border:1px solid #2d3748;border-radius:14px;width:700px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
 #help-header{padding:18px 22px 14px;border-bottom:1px solid #2d3748;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 #help-header h2{font-size:16px;font-weight:700;color:#f7fafc}
 #help-header .ver{font-size:11px;color:#718096;margin-top:2px}
-#help-body{flex:1;overflow-y:auto;padding:0}
+#help-body{flex:1;overflow-y:auto;padding:0;-webkit-overflow-scrolling:touch}
 #help-body::-webkit-scrollbar{width:4px}
 #help-body::-webkit-scrollbar-thumb{background:#2d3748;border-radius:2px}
 .help-tabs{display:flex;border-bottom:1px solid #2d3748;background:#12161f;flex-shrink:0}
@@ -219,7 +219,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
   <button class="tbtn" id="btn-gap" onclick="toggleGap()" title="Show gap analysis">&#9888; Gap Analysis</button>
   <button class="tbtn" onclick="openAddModal()" title="Add new tech">&#43; Add Tech</button>
   <button class="tbtn" onclick="openPending()" title="Review pending changes — Admin only" id="btn-pending">&#128203; Review <span class="admin-badge">&#128274; ADMIN</span></button>
-  <button class="tbtn" onclick="openHelp()" title="How to use this map">&#63; Help</button>
+  <button class="tbtn" onclick="openHelp()" title="Help" style="width:30px;padding:4px 0;font-weight:700;font-size:14px">?</button>
   <span id="status">99 techs shown</span>
 </div>
 
@@ -720,7 +720,7 @@ updatePendingBadge();
       </div>
       <button onclick="closeHelp()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer;padding:2px 8px;border-radius:4px">&#10005;</button>
     </div>
-    <div class="help-tabs">
+    <div class="help-tabs" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <div class="help-tab active" onclick="switchTab('overview')">&#127760; Overview</div>
       <div class="help-tab" onclick="switchTab('pins')">&#128205; Pins & Ratings</div>
       <div class="help-tab" onclick="switchTab('search')">&#128269; Search & Filter</div>
@@ -820,33 +820,34 @@ updatePendingBadge();
       </div>
 
       <!-- MANAGE TECHS -->
-      <div class="help-section" id="tab-manage" style="padding-bottom:24px">
+      <div class="help-section" id="tab-manage">
+        <div style="height:1px"></div>
         <div class="help-card">
           <h4>&#43; Add New Tech</h4>
           <div class="step"><div class="step-num">1</div><p>Click <strong>+ Add Tech</strong> in the toolbar.</p></div>
           <div class="step"><div class="step-num">2</div><p>Fill in the tech's name, contact info, rating, territory, and travel range.</p></div>
-          <div class="step"><div class="step-num">3</div><p>If the tech already exists in Salesforce, paste their <strong>Salesforce Contact Link</strong> in the field provided so the record stays connected.</p></div>
-          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. The tech goes into the review queue — they are NOT live on the map yet.</p></div>
-          <div class="step"><div class="step-num">5</div><p>An admin opens the <strong>Review Panel</strong> (🔒 password required) to approve or reject.</p></div>
+          <div class="step"><div class="step-num">3</div><p>If the tech exists in Salesforce, paste their <strong>Salesforce Contact Link</strong> in the field provided so the record stays connected.</p></div>
+          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. The tech goes into the review queue &mdash; they are NOT live on the map yet.</p></div>
+          <div class="step"><div class="step-num">5</div><p>An admin opens the <strong>Review Panel</strong> (password required) to approve or reject.</p></div>
         </div>
         <div class="help-card">
           <h4>&#9998; Suggest an Edit</h4>
           <div class="step"><div class="step-num">1</div><p>Click any pin to open the contact card.</p></div>
-          <div class="step"><div class="step-num">2</div><p>Click <strong>✎ Suggest an Edit</strong> at the bottom of the card.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Update any fields — phone, email, rating, notes, Salesforce link, etc.</p></div>
-          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. Changes go to the review queue, not live immediately.</p></div>
+          <div class="step"><div class="step-num">2</div><p>Click <strong>&#9998; Suggest an Edit</strong> at the bottom of the card.</p></div>
+          <div class="step"><div class="step-num">3</div><p>Update any fields &mdash; phone, email, rating, Salesforce link, notes, etc.</p></div>
+          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. Changes go to the queue, not live immediately.</p></div>
         </div>
         <div class="help-card">
-          <h4>&#128203; Review Panel <span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px;margin-left:4px">&#128274; ADMIN ONLY</span></h4>
-          <p>Click <strong>📋 Review</strong> in the toolbar — a red badge appears when items are pending. Enter the admin password when prompted. Review each submission and click <strong>✓ Approve</strong> or <strong>✗ Reject</strong>. Approved items are held until exported.</p>
+          <h4>&#128203; Review Panel &nbsp;<span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px">&#128274; Admin Only</span></h4>
+          <p>Click <strong>&#128203; Review</strong> in the toolbar &mdash; a red badge appears when items are pending. Enter the admin password when prompted. Approve or reject each submission. Approved items are held until exported.</p>
         </div>
         <div class="help-card">
-          <h4>&#11015; Export to CSV for Salesforce <span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px;margin-left:4px">&#128274; ADMIN ONLY</span></h4>
-          <p>After approving submissions, click <strong>⬇ Export to CSV for Salesforce</strong> in the Review Panel. Downloads a formatted CSV with all approved changes including Salesforce links, ready to import into Salesforce contacts. The queue clears automatically after export.</p>
+          <h4>&#11015; Export to CSV for Salesforce &nbsp;<span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px">&#128274; Admin Only</span></h4>
+          <p>After approving, click <strong>&#11015; Export to CSV for Salesforce</strong> in the Review Panel. Downloads a formatted CSV with all approved changes including Salesforce links, ready to import into Salesforce contacts. The queue clears automatically after export.</p>
         </div>
         <div class="help-tip">&#128161; <strong>Tip:</strong> The review queue saves in your browser between sessions. Export regularly so approved changes get into Salesforce and are not lost if you clear your browser cache.</div>
+        <div style="height:20px"></div>
       </div>
-
     </div>
     <div class="help-footer">
       <span>&#128205; Tech Network Map v1.5 &middot; Last updated Aug 2026</span>
