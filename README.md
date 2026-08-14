@@ -38,6 +38,15 @@ An interactive US map of all active third-party technicians, color-coded by Inte
 
 ## 📋 Changelog
 
+### v1.5 — August 2026
+- Added **Coverage Radius** toggle — shows each tech's preferred travel range as a circle on the map
+- Added **Gap Analysis** panel — lists states by coverage level (No Coverage, Low Coverage, Covered)
+- Added **Add New Tech** button — submit new tech details for review before going live
+- Added **Suggest an Edit** button on every tech popup — propose updates to existing tech info
+- Added **Review Panel** — approve or reject pending submissions
+- Added **Export to CSV** — download approved changes formatted for Salesforce import
+- Pending review queue saves across browser sessions via localStorage
+
 ### v1.4 — August 2026
 - Added favicon (blue map pin icon) to browser tab
 - Reverted to original CartoDB Dark tile background
