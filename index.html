@@ -181,6 +181,30 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
 .btn-admin-ok:hover{background:#2c5282}
 .btn-admin-cancel{background:transparent;border:1px solid #4a5568;color:#a0aec0;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px}
 .admin-badge{background:#276749;color:#68d391;border:1px solid #276749;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:6px;display:none}
+
+/* Vendor layer */
+.vendor-pin{cursor:pointer}
+.vendor-pin:hover rect{opacity:.9}
+#vendor-bar{background:#0a0d14;border-bottom:1px solid #2d3748;padding:5px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;font-size:12px}
+#vendor-bar label{color:#a0aec0;font-weight:600;font-size:11px;letter-spacing:.04em;white-space:nowrap}
+.vbtn{padding:3px 10px;border-radius:12px;border:1px solid;font-size:11px;font-weight:600;cursor:pointer;background:transparent;transition:all .15s;white-space:nowrap}
+
+/* Vendor popup */
+.vp-name{font-size:14px;font-weight:700;color:#f7fafc;margin-bottom:3px}
+.vp-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;margin-bottom:8px}
+.vp-approved{background:#1c4532;color:#68d391}
+.vp-probation{background:#744210;color:#f6ad55}
+.vp-new{background:#322659;color:#b794f4}
+.vp-row{display:flex;gap:7px;font-size:12px;color:#cbd5e0;margin-bottom:4px;flex-wrap:wrap}
+.vp-row a{color:#63b3ed;text-decoration:none}
+.vp-section{font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;margin:8px 0 4px}
+.vp-tech-chip{display:inline-block;background:#1a2744;border:1px solid #2c5282;color:#90cdf4;border-radius:4px;padding:2px 7px;font-size:10px;margin:2px;cursor:pointer}
+.vp-tech-chip:hover{background:#2c5282}
+.vp-state-chip{display:inline-block;background:#12261a;border:1px solid #276749;color:#68d391;border-radius:4px;padding:2px 6px;font-size:10px;margin:2px}
+.vp-note{font-size:11px;color:#718096;font-style:italic;margin-top:6px;line-height:1.4}
+
+/* Vendor coverage mode indicator */
+#vendor-mode-indicator{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(26,31,46,.92);border:1px solid #9f7aea;border-radius:20px;padding:5px 16px;font-size:12px;color:#b794f4;font-weight:600;z-index:500;display:none;pointer-events:none;letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -189,7 +213,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
   <div>
     <div style="display:flex;align-items:center;gap:10px">
       <h1>&#128205; Third-Party Tech Network</h1>
-      <span style="background:#2d3748;color:#90cdf4;border:1px solid #4299e1;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.04em">v1.5</span>
+      <span style="background:#2d3748;color:#90cdf4;border:1px solid #4299e1;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.04em">v1.8</span>
     </div>
     <div class="sub">Active technicians &middot; Internal Rating &middot; 99 techs &middot; Last updated Aug 2026 &middot; v1.5</div>
   </div>
@@ -217,6 +241,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
   <span style="width:1px;height:20px;background:#2d3748;margin:0 2px"></span>
   <button class="tbtn" id="btn-radius" onclick="toggleRadius()" title="Show coverage radius per tech">&#9711; Radius</button>
   <button class="tbtn" id="btn-gap" onclick="toggleGap()" title="Show gap analysis">&#9888; Gap Analysis</button>
+  <button class="tbtn" id="btn-vendors" onclick="cycleVendorMode()" title="Click to cycle: Off → Show vendors → Vendors only">&#127970; Vendors</button>
   <button class="tbtn" onclick="openAddModal()" title="Add new tech">&#43; Add Tech</button>
   <button class="tbtn" onclick="openPending()" title="Review pending changes — Admin only" id="btn-pending">&#128203; Review <span class="admin-badge">&#128274; ADMIN</span></button>
   <button class="tbtn" onclick="openHelp()" title="Help" style="width:30px;padding:4px 0;font-weight:700;font-size:14px">?</button>
@@ -236,12 +261,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
   <span id="prox-status"></span>
 </div>
 
+<div id="vendor-bar" style="display:none">
+  <label>&#127970; VENDORS</label>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#48bb78;border-radius:50%;display:inline-block;opacity:.7"></span>Site Services Now</span>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#63b3ed;border-radius:50%;display:inline-block;opacity:.7"></span>Connext</span>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#f6ad55;border-radius:50%;display:inline-block;opacity:.7"></span>Techlink</span>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#fc8181;border-radius:50%;display:inline-block;opacity:.7"></span>Progressive Tech</span>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#b794f4;border-radius:50%;display:inline-block;opacity:.7"></span>Veteranson</span>
+  <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#fbd38d;border-radius:50%;display:inline-block;opacity:.7"></span>VGI</span>
+  <span style="color:#4a5568;font-size:11px;margin-left:4px">| Click pin for details</span>
+</div>
 <div id="map-wrap">
   <div id="gap-panel">
     <h2>&#9888; Gap Analysis <button onclick="toggleGap()" style="background:transparent;border:none;color:#718096;cursor:pointer;font-size:14px">&#10005;</button></h2>
     <div id="gap-list"></div>
   </div>
   <div id="map"></div>
+  <div id="vendor-mode-indicator">&#127970; Vendors Only Mode</div>
   <div id="result-panel">
     <h2>Nearest to <span id="rp-loc"></span></h2>
     <div id="result-list"></div>
@@ -289,10 +325,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
         </select>
       </div>
     </div>
-    <div class="form-row full">
+    <div class="form-row">
       <div class="form-group">
-        <label>Salesforce Contact Link <span style="font-weight:400;color:#718096;text-transform:none;font-size:10px">(optional — paste URL if contact exists in Salesforce)</span></label>
-        <input id="f-sflink" type="url" placeholder="https://playon.lightning.force.com/lightning/r/Contact/...">
+        <label>Vendor / Company Association <span style="font-weight:400;color:#718096;text-transform:none;font-size:10px">(if tech works under a vendor)</span></label>
+        <select id="f-vendor">
+          <option value="">Independent / None</option>
+          <option value="Site Services Now">Site Services Now</option>
+          <option value="Connext">Connext</option>
+          <option value="Progressive Technologies Inc">Progressive Technologies Inc</option>
+          <option value="Techlink Services LLC">Techlink Services LLC</option>
+          <option value="VGI Technology">VGI Technology</option>
+          <option value="Veteranson Low Voltage">Veteranson Low Voltage</option>
+          <option value="other">Other (specify in notes)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Salesforce Contact Link <span style="font-weight:400;color:#718096;text-transform:none;font-size:10px">(optional)</span></label>
+        <input id="f-sflink" type="url" placeholder="https://playon.lightning.force.com/...">
       </div>
     </div>
     <div class="form-row full">
@@ -370,9 +419,11 @@ function makePopup(t,driveInfo=null){
   const terr=t.territory?`<div class="p-terr">&#128506; ${t.territory}</div>`:'';
   const note=t.notes?`<div class="p-note">&#128221; ${t.notes}</div>`:'';
   const range=t.range?`<div class="p-range">&#9711; Travel radius: ${t.range} miles</div>`:'';
+  const wo = TECH_WORKORDER_DATA[t.name];
+  const woNote = wo ? `<div style="font-size:11px;background:#12161f;border:1px solid #2d3748;border-radius:6px;padding:5px 8px;margin-top:5px"><span style="color:#718096">&#128203; Work history: </span><strong style="color:#a0aec0">${wo.jobs} jobs</strong> in <span style="color:#68d391">${wo.states.join(', ')||'—'}</span></div>` : '';
   const drive=driveInfo?`<div class="p-drive"><div>&#128664; ~${driveInfo.time} &nbsp;<span style="color:#a0aec0;font-weight:400">${driveInfo.miles} mi</span></div><div style="display:flex;gap:10px;font-size:11px"><span>&#8594; One way: <strong style="color:#90cdf4">${estCost(driveInfo.miles)}</strong></span><span>&#8644; Round trip: <strong style="color:${rtCostColor(driveInfo.miles)}">${estCost(driveInfo.miles*2)}</strong>${(driveInfo.miles*.76*2)>200?' <span style="color:#fc8181;font-size:10px">&#9888;</span>':''}</span><span style="color:#4a5568">@ $0.76/mi</span></div></div>`:'';
   const editBtn=`<div class="p-edit-btn" onclick="openEditModal(${JSON.stringify(t).replace(/"/g,'&quot;')})">&#9998; Suggest an Edit</div>`;
-  return `${drive}<div class="p-name">${t.name}</div><div class="p-company">${t.company||''}</div><span class="p-rating ${RATING_CLASS[t.rating]}">${RATING_LABEL[t.rating]}</span>${ph}${em}<div class="p-loc">&#128205; ${loc}${t.zip?' &middot; ZIP '+t.zip:''}</div>${terr}${range}${note}${editBtn}`;
+  return `${drive}<div class="p-name">${t.name}</div><div class="p-company">${t.company||''}</div><span class="p-rating ${RATING_CLASS[t.rating]}">${RATING_LABEL[t.rating]}</span>${ph}${em}<div class="p-loc">&#128205; ${loc}${t.zip?' &middot; ZIP '+t.zip:''}</div>${terr}${range}${woNote}${note}${editBtn}`;
 }
 
 // ── BUILD MARKERS ──────────────────────────────────────
@@ -567,6 +618,7 @@ function openAddModal(){
   document.getElementById('modal-sub').textContent='Fill in the details. Submission goes to review before going live.';
   document.getElementById('edit-index').value='';
   ['name','company','phone','email','city','state','zip','notes','sflink'].forEach(f=>document.getElementById('f-'+f).value='');
+  document.getElementById('f-vendor').value='';
   document.getElementById('f-range').value='100';
   document.getElementById('f-rating').value='2';
   document.getElementById('f-territory').value='';
@@ -589,6 +641,7 @@ function openEditModal(t){
   document.getElementById('f-territory').value=t.territory||'';
   document.getElementById('f-notes').value=t.notes||'';
   document.getElementById('f-sflink').value=t.sflink||'';
+  if(document.getElementById('f-vendor')) document.getElementById('f-vendor').value=t.vendor||'';
   document.getElementById('modal-overlay').style.display='flex';
 }
 
@@ -612,6 +665,7 @@ function submitForm(){
     territory:document.getElementById('f-territory').value,
     notes:document.getElementById('f-notes').value,
     sflink:document.getElementById('f-sflink').value,
+    vendor:document.getElementById('f-vendor').value,
     status:'pending'
   };
   pendingItems.push(submission);
@@ -651,6 +705,7 @@ function openPending(){
         <div class="pend-field"><div class="lbl">State</div><div class="val">${p.state||'—'}</div></div>
         <div class="pend-field"><div class="lbl">Rating</div><div class="val">${RATING_LABEL[p.rating]||p.rating}</div></div>
         <div class="pend-field"><div class="lbl">Territory</div><div class="val">${p.territory||'—'}</div></div>
+        <div class="pend-field"><div class="lbl">Vendor</div><div class="val">${p.vendor||'Independent'}</div></div>
         <div class="pend-field"><div class="lbl">Travel Range</div><div class="val">${p.range} mi</div></div>
         <div class="pend-field"><div class="lbl">Submitted</div><div class="val">${new Date(p.submittedAt).toLocaleDateString()}</div></div>
       </div>
@@ -706,6 +761,168 @@ function exportCSV(){
   updatePendingBadge();
 }
 
+
+// ── VENDOR DATA ─────────────────────────────────────────
+const VENDORS = [{"id": "site-services-now", "name": "Site Services Now", "type": "vendor", "coverage": "National", "states": ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Delaware", "Florida", "Georgia", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"], "dispatch_phone": "", "dispatch_email": "", "notes": "National coverage. Range varies by tech. 22 active techs across East Coast and West Coast regions.", "tech_ids": ["Josef Myers", "Hector Vasquez", "Charles Rhett Becker", "Osee Relaford III", "James Rennard", "Benjamin Sizemore", "Matt Harcey", "Ali Khanafer", "Jobani Valdez", "Rudy Aldama", "Steven Rocha", "EJ Senteney-Shparago", "Josh Weickum", "Ricky Emery", "Mark de Amici", "Michael Amici", "Evan Moses", "Colter Zimmerman", "Kyle Halter", "Nicholas Thomas Zelinka"], "lat": 38.5, "lng": -96.0}, {"id": "connext", "name": "Connext", "type": "vendor", "coverage": "National", "states": ["Connecticut", "Florida", "Georgia", "Illinois", "Iowa", "Kentucky", "Louisiana", "Maine", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "Oklahoma", "Pennsylvania", "Rhode Island", "Texas", "Vermont", "Virginia"], "dispatch_phone": "", "dispatch_email": "", "notes": "National coverage. Range varies by tech. Previously used \u2014 verify active status before dispatching.", "tech_ids": ["Eric Madera", "Adolfo Barrios"], "lat": 39.5, "lng": -104.9}, {"id": "progressive-tech", "name": "Progressive Technologies Inc", "type": "vendor", "coverage": "Regional", "states": ["Texas", "Tennessee", "Arkansas", "Oklahoma", "Mississippi", "Louisiana"], "dispatch_phone": "(903) 816-2447", "dispatch_email": "mrogers@thinkprogressive.com", "notes": "South Central US focus. 3 active techs in TX and TN.", "tech_ids": ["Ali Rogers", "Progressive Technologies", "Keith Clowers"], "lat": 35.15, "lng": -90.05}, {"id": "techlink", "name": "Techlink Services LLC", "type": "vendor", "coverage": "National", "states": ["Alabama", "Arizona", "California", "Colorado", "Delaware", "Florida", "Georgia", "Illinois", "Indiana", "Iowa", "Kansas", "Louisiana", "Massachusetts", "Michigan", "Missouri", "New Hampshire", "New York", "Ohio", "Pennsylvania", "Texas", "Vermont", "Virginia", "Wisconsin"], "dispatch_phone": "", "dispatch_email": "", "notes": "New vendor. National coverage. Vetting in progress \u2014 confirm capabilities before dispatching.", "tech_ids": [], "lat": 39.0, "lng": -98.0}, {"id": "vgi-technology", "name": "VGI Technology", "type": "vendor", "coverage": "Regional", "states": ["Texas"], "dispatch_phone": "", "dispatch_email": "", "notes": "Texas-based vendor. Add dispatch contact and verify coverage cities.", "tech_ids": [], "lat": 31.1, "lng": -97.6}, {"id": "veteranson", "name": "Veteranson Low Voltage", "type": "vendor", "coverage": "Regional", "states": ["Arizona", "Indiana", "Louisiana", "Mississippi", "Texas"], "dispatch_phone": "", "dispatch_email": "", "notes": "No active rated techs on file. Verify status and coverage before use.", "tech_ids": [], "lat": 32.8, "lng": -86.8}];
+const vendorLayer = L.layerGroup().addTo(map);
+let showVendors = false;
+let activeVendorFilter = 'all';
+
+const VENDOR_COLOR = {bg:'#322659', bd:'#9f7aea', tx:'#b794f4'};
+let onlyVendors = false;
+
+function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `${r},${g},${b}`;}
+function makeVendorIcon(vendor) {
+  const vc = VENDOR_COVERAGE_COLORS[vendor.name] || {color:'#b794f4'};
+  const col = vc.color;
+  const jobs = (VENDOR_JOB_COUNTS[vendor.name] || 0);
+  const rgb = hexToRgb(col);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="44" viewBox="0 0 40 44">
+    <ellipse cx="20" cy="41" rx="8" ry="3" fill="rgba(0,0,0,0.35)"/>
+    <rect x="2" y="2" width="36" height="36" rx="8" fill="rgba(${rgb},0.25)" stroke="${col}" stroke-width="2.5"/>
+    <text x="20" y="14" text-anchor="middle" font-size="7.5" font-weight="800" fill="${col}" font-family="Segoe UI,Arial">VENDOR</text>
+    <text x="20" y="26" text-anchor="middle" font-size="9" font-weight="700" fill="${col}" font-family="Segoe UI,Arial">&#127970;</text>
+    ${jobs>0?`<text x="20" y="35" text-anchor="middle" font-size="7" font-weight="600" fill="${col}" font-family="Segoe UI,Arial">${jobs} jobs</text>`:''}
+  </svg>`;
+  return L.divIcon({html:svg, iconSize:[40,44], iconAnchor:[20,44], popupAnchor:[0,-46], className:'vendor-pin'});
+}
+
+function makeVendorPopup(v) {
+  const jobs = VENDOR_JOB_COUNTS[v.name] || 0;
+  const stateChips = v.states.map(s=>`<span class="vp-state-chip">${s}</span>`).join('');
+  const techChips = v.tech_ids.map(n=>`<span class="vp-tech-chip" onclick="flyToTech('${n.replace(/'/g,"\'")}')">&#128205; ${n}</span>`).join('');
+  const ph = v.dispatch_phone ? `<div class="vp-row">&#128222;&nbsp;<a href="tel:${v.dispatch_phone.replace(/\D/g,'')}">${v.dispatch_phone}</a></div>` : '';
+  const em = v.dispatch_email ? `<div class="vp-row">&#9993;&nbsp;<a href="mailto:${v.dispatch_email}">${v.dispatch_email}</a></div>` : '';
+  const vc = VENDOR_COVERAGE_COLORS[v.name] || {color:'#b794f4'};
+  const vcol = vc.color;
+  const coverage = v.coverage === 'National' ? '&#127760; National Coverage' : `&#128506; ${v.coverage} Coverage`;
+  return `
+    <div class="vp-name" style="display:flex;align-items:center;gap:8px">
+      <span style="width:12px;height:12px;border-radius:3px;background:${vcol};display:inline-block;flex-shrink:0"></span>
+      &#127970; ${v.name}
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:12px;color:${vcol}">${coverage}</span>
+      ${jobs>0?`<span style="font-size:11px;background:#1a1f2e;border:1px solid #4a5568;color:#a0aec0;padding:1px 8px;border-radius:8px">&#128203; ${jobs} work orders</span>`:''}
+    </div>
+    ${ph}${em}
+    ${v.states.length ? `<div class="vp-section">States Covered (${v.states.length}) — based on work orders</div><div>${stateChips}</div>` : '<div style="font-size:11px;color:#718096;margin-top:4px">No state data on file</div>'}
+    ${v.tech_ids.length ? `<div class="vp-section">Linked Techs (${v.tech_ids.length}) — click to locate</div><div>${techChips}</div>` : '<div style="font-size:11px;color:#718096;margin-top:4px">No techs linked to this vendor</div>'}
+    ${v.notes ? `<div class="vp-note">&#128221; ${v.notes}</div>` : ''}
+  `;
+}
+
+const VENDOR_JOB_COUNTS = {"Site Services Now": 1133, "Connext": 177, "Techlink Services LLC": 86, "Veteranson Low Voltage": 33, "VGI Technology": 2, "Progressive Technologies Inc": 0};
+const TECH_WORKORDER_DATA = {"Aaron Goodin": {"jobs": 2, "states": ["Tennessee"]}, "Adam Ramsey": {"jobs": 2, "states": ["Ohio"]}, "Adolfo Barrios": {"jobs": 1, "states": ["Colorado"]}, "Alphonso Villarreal": {"jobs": 2, "states": ["Texas"]}, "Ashley Smith": {"jobs": 7, "states": ["Delaware", "Virginia"]}, "Blair Robinson": {"jobs": 22, "states": ["Georgia", "South Carolina"]}, "Bob Ritterodt": {"jobs": 9, "states": ["Montana", "Wyoming"]}, "Brian Frost": {"jobs": 2, "states": ["Oklahoma"]}, "Bryson Fuller": {"jobs": 11, "states": ["Texas"]}, "Chance Reuppel": {"jobs": 5, "states": ["Tennessee"]}, "Chris Brightwell": {"jobs": 1, "states": ["New Mexico"]}, "Claire Catignani": {"jobs": 7, "states": ["Tennessee"]}, "Correct Digital Displays": {"jobs": 3, "states": ["Illinois"]}, "Crystal Dakota": {"jobs": 1, "states": ["Montana"]}, "David Atchison": {"jobs": 1, "states": ["Texas"]}, "Dustin Supernois": {"jobs": 2, "states": ["New Hampshire"]}, "Dylan Fellows": {"jobs": 4, "states": ["Colorado", "Wyoming"]}, "Eric du Toit": {"jobs": 13, "states": ["Colorado", "Kansas"]}, "Erik Colson": {"jobs": 4, "states": []}, "Ernest Dixson": {"jobs": 1, "states": ["North Carolina"]}, "Grant Smiley": {"jobs": 45, "states": ["Kentucky", "North Carolina", "South Carolina", "Tennessee", "Virginia", "West Virginia"]}, "Jacob Gold": {"jobs": 2, "states": ["Texas"]}, "Jerrod Snyder": {"jobs": 87, "states": ["North Carolina", "South Carolina"]}, "Jesse Roberts": {"jobs": 2, "states": ["Florida"]}, "Jim Warnke": {"jobs": 2, "states": ["South Dakota"]}, "Joe Dimel": {"jobs": 2, "states": ["Ohio"]}, "John Nygaard": {"jobs": 20, "states": ["Montana", "North Dakota", "South Dakota"]}, "Kenneth Ellison": {"jobs": 25, "states": ["Florida"]}, "Khalid Elsedeeg": {"jobs": 1, "states": ["Tennessee"]}, "Kristine Burdette": {"jobs": 4, "states": ["Kansas"]}, "Matt Higgins": {"jobs": 20, "states": ["Kentucky"]}, "Michael Hoy": {"jobs": 2, "states": ["Oklahoma"]}, "Mike Mcleod": {"jobs": 36, "states": ["California"]}, "Neil Hurd": {"jobs": 5, "states": ["New Mexico"]}, "Nick Brazil": {"jobs": 1, "states": ["Wyoming"]}, "Robert Candiello": {"jobs": 4, "states": ["Pennsylvania"]}, "Ronald Rueppel": {"jobs": 22, "states": ["Idaho", "Oregon", "Washington"]}, "Scott Roberts": {"jobs": 2, "states": ["Nevada"]}, "Stephen Allen": {"jobs": 1, "states": ["Massachusetts"]}, "Steve Ethington": {"jobs": 1, "states": ["Tennessee"]}, "Ted Glover": {"jobs": 6, "states": ["Alabama", "Florida"]}, "Thomas Shelby": {"jobs": 2, "states": ["Arizona"]}, "Trevor Green": {"jobs": 101, "states": ["Arizona", "California", "Nevada"]}, "Vic Maggio": {"jobs": 31, "states": ["Virginia"]}, "Vincent Loera": {"jobs": 42, "states": ["Alabama", "Georgia"]}, "Wesley Welch": {"jobs": 4, "states": ["Alabama"]}};
+
+function flyToTech(name) {
+  const m = allMarkers.find(m => m._tech.name === name);
+  if (!m) { alert('Tech not currently visible on map. Clear filters and try again.'); return; }
+  map.setView([m._tech._lat, m._tech._lng], 9, {animate:true});
+  setTimeout(() => m.openPopup(), 500);
+}
+
+const VENDOR_COVERAGE_COLORS = {
+  'Site Services Now':            {color:'#48bb78'},
+  'Connext':                      {color:'#63b3ed'},
+  'Techlink Services LLC':        {color:'#f6ad55'},
+  'Progressive Technologies Inc': {color:'#fc8181'},
+  'Veteranson Low Voltage':       {color:'#b794f4'},
+  'VGI Technology':               {color:'#fbd38d'},
+};
+const STATE_CENTROIDS = {
+  'Alabama':[32.7,-86.7],'Alaska':[64.2,-153.0],'Arizona':[34.0,-111.1],
+  'Arkansas':[34.7,-92.3],'California':[36.7,-119.7],'Colorado':[39.0,-105.5],
+  'Connecticut':[41.6,-72.7],'Delaware':[39.2,-75.5],'Florida':[28.1,-81.6],
+  'Georgia':[32.2,-83.4],'Hawaii':[20.8,-156.3],'Idaho':[44.0,-114.7],
+  'Illinois':[40.0,-89.0],'Indiana':[40.3,-86.1],'Iowa':[42.0,-93.6],
+  'Kansas':[38.5,-98.4],'Kentucky':[37.5,-85.3],'Louisiana':[30.5,-91.2],
+  'Maine':[44.4,-69.4],'Maryland':[39.0,-76.7],'Massachusetts':[42.3,-71.6],
+  'Michigan':[44.2,-85.0],'Minnesota':[46.4,-93.0],'Mississippi':[32.7,-89.7],
+  'Missouri':[38.5,-92.3],'Montana':[46.9,-110.4],'Nebraska':[41.5,-99.9],
+  'Nevada':[38.3,-117.1],'New Hampshire':[43.5,-71.6],'New Jersey':[40.2,-74.7],
+  'New Mexico':[34.5,-106.2],'New York':[42.1,-74.2],'North Carolina':[35.5,-79.4],
+  'North Dakota':[47.5,-101.0],'Ohio':[40.4,-82.7],'Oklahoma':[35.5,-96.9],
+  'Oregon':[44.1,-120.5],'Pennsylvania':[40.6,-77.2],'Rhode Island':[41.7,-71.5],
+  'South Carolina':[33.8,-81.2],'South Dakota':[44.4,-100.2],'Tennessee':[35.9,-86.7],
+  'Texas':[31.1,-97.6],'Utah':[39.3,-111.1],'Vermont':[44.0,-72.7],
+  'Virginia':[37.8,-79.5],'Washington':[47.4,-120.5],'West Virginia':[38.5,-80.5],
+  'Wisconsin':[44.3,-89.6],'Wyoming':[42.8,-107.3]
+};
+
+let vendorMode = 0;
+
+function cycleVendorMode() {
+  vendorMode = (vendorMode + 1) % 3;
+  const btn = document.getElementById('btn-vendors');
+  const indicator = document.getElementById('vendor-mode-indicator');
+  const vendorBar = document.getElementById('vendor-bar');
+  if (vendorMode === 0) {
+    btn.classList.remove('on');
+    btn.innerHTML = '&#127970; Vendors';
+    showVendors = false; onlyVendors = false;
+    indicator.style.display = 'none';
+    vendorBar.style.display = 'none';
+    vendorLayer.clearLayers();
+    applyFilters();
+  } else if (vendorMode === 1) {
+    btn.classList.add('on');
+    btn.innerHTML = '&#127970; Vendors &#10003;';
+    showVendors = true; onlyVendors = false;
+    indicator.style.display = 'none';
+    vendorBar.style.display = 'flex';
+    applyFilters();
+    renderVendors();
+  } else {
+    btn.classList.add('on');
+    btn.innerHTML = '&#127970; Only &#9646;&#9646;';
+    showVendors = true; onlyVendors = true;
+    indicator.style.display = 'block';
+    vendorBar.style.display = 'flex';
+    markerLayer.clearLayers();
+    radiusLayer.clearLayers();
+    renderVendors();
+  }
+}
+
+function drawVendorCoverage(v) {
+  if (!v.states || !v.states.length) return;
+  const c = VENDOR_COVERAGE_COLORS[v.name] || {color:'#b794f4'};
+  v.states.forEach(state => {
+    const coords = STATE_CENTROIDS[state];
+    if (!coords) return;
+    L.circle(coords, {
+      radius: 165000,
+      color: c.color,
+      fillColor: c.color,
+      fillOpacity: 0.07,
+      weight: 1.2,
+      dashArray: '5,5',
+      interactive: false
+    }).addTo(vendorLayer);
+  });
+}
+
+function renderVendors() {
+  vendorLayer.clearLayers();
+  if (!showVendors) return;
+  VENDORS.forEach(v => {
+    // Draw coverage radius circles per state
+    drawVendorCoverage(v);
+    // Draw vendor pin
+    if (!v.lat || !v.lng) return;
+    const m = L.marker([v.lat, v.lng], {icon: makeVendorIcon(v), zIndexOffset: 300})
+      .bindPopup(makeVendorPopup(v), {maxWidth: 360, className: ''});
+    vendorLayer.addLayer(m);
+  });
+}
+
+// toggleOnlyVendors replaced by cycleVendorMode
+
+// toggleVendors replaced by cycleVendorMode
+
+
+
 buildMarkers();
 updatePendingBadge();
 </script>
@@ -716,7 +933,7 @@ updatePendingBadge();
     <div id="help-header">
       <div>
         <h2>&#128205; How to Use the Tech Network Map</h2>
-        <div class="ver">v1.5 &middot; Third-Party Tech Network</div>
+        <div class="ver">v1.8 &middot; Third-Party Tech Network</div>
       </div>
       <button onclick="closeHelp()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer;padding:2px 8px;border-radius:4px">&#10005;</button>
     </div>
@@ -850,7 +1067,7 @@ updatePendingBadge();
       </div>
     </div>
     <div class="help-footer">
-      <span>&#128205; Tech Network Map v1.5 &middot; Last updated Aug 2026</span>
+      <span>&#128205; Tech Network Map v1.8 &middot; Last updated Aug 2026</span>
       <button onclick="closeHelp()" style="background:#2b6cb0;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">Got it &#10003;</button>
     </div>
   </div>
