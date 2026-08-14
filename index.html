@@ -290,6 +290,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
       </div>
     </div>
     <div class="form-row full">
+      <div class="form-group">
+        <label>Salesforce Contact Link <span style="font-weight:400;color:#718096;text-transform:none;font-size:10px">(optional — paste URL if contact exists in Salesforce)</span></label>
+        <input id="f-sflink" type="url" placeholder="https://playon.lightning.force.com/lightning/r/Contact/...">
+      </div>
+    </div>
+    <div class="form-row full">
       <div class="form-group"><label>Notes</label><textarea id="f-notes" placeholder="Any relevant notes about this tech..."></textarea></div>
     </div>
     <div class="modal-btns">
@@ -560,7 +566,7 @@ function openAddModal(){
   document.getElementById('modal-title').textContent='Add New Tech';
   document.getElementById('modal-sub').textContent='Fill in the details. Submission goes to review before going live.';
   document.getElementById('edit-index').value='';
-  ['name','company','phone','email','city','state','zip','notes'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['name','company','phone','email','city','state','zip','notes','sflink'].forEach(f=>document.getElementById('f-'+f).value='');
   document.getElementById('f-range').value='100';
   document.getElementById('f-rating').value='2';
   document.getElementById('f-territory').value='';
@@ -582,6 +588,7 @@ function openEditModal(t){
   document.getElementById('f-rating').value=t.rating||2;
   document.getElementById('f-territory').value=t.territory||'';
   document.getElementById('f-notes').value=t.notes||'';
+  document.getElementById('f-sflink').value=t.sflink||'';
   document.getElementById('modal-overlay').style.display='flex';
 }
 
@@ -604,6 +611,7 @@ function submitForm(){
     rating:parseInt(document.getElementById('f-rating').value),
     territory:document.getElementById('f-territory').value,
     notes:document.getElementById('f-notes').value,
+    sflink:document.getElementById('f-sflink').value,
     status:'pending'
   };
   pendingItems.push(submission);
@@ -646,6 +654,7 @@ function openPending(){
         <div class="pend-field"><div class="lbl">Travel Range</div><div class="val">${p.range} mi</div></div>
         <div class="pend-field"><div class="lbl">Submitted</div><div class="val">${new Date(p.submittedAt).toLocaleDateString()}</div></div>
       </div>
+      ${p.sflink?`<div style="font-size:11px;margin-bottom:6px"><span style="color:#718096">Salesforce: </span><a href="${p.sflink}" target="_blank" style="color:#63b3ed;word-break:break-all">${p.sflink}</a></div>`:''}
       ${p.notes?`<div style="font-size:11px;color:#a0aec0;margin-bottom:8px;font-style:italic">Notes: ${p.notes}</div>`:''}
       <div class="pend-actions">
         <button class="btn-approve" onclick="approvePending(${idx})">&#10003; Approve</button>
@@ -676,13 +685,14 @@ function rejectPending(idx){
 function exportCSV(){
   const approved=pendingItems.filter(p=>p.status==='approved');
   if(!approved.length){alert('No approved submissions to export.');return;}
-  const headers=['Type','Name','Company','Phone','Email','City','State','ZIP','Rating','Territory','Travel Range (mi)','Notes','Submitted Date'];
+  const headers=['Type','Name','Company','Phone','Email','City','State','ZIP','Rating','Territory','Travel Range (mi)','Notes','Salesforce Link','Submitted Date'];
   const rows=approved.map(p=>[
     p.type==='new'?'New Tech':'Edit Request',
     p.name,p.company,p.phone,p.email,p.city,p.state,p.zip,
     RATING_LABEL[p.rating]||p.rating,
     p.territory,p.range,
     `"${(p.notes||'').replace(/"/g,'""')}"`,
+    p.sflink||'',
     new Date(p.submittedAt).toLocaleDateString()
   ]);
   const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
@@ -810,30 +820,31 @@ updatePendingBadge();
       </div>
 
       <!-- MANAGE TECHS -->
-      <div class="help-section" id="tab-manage">
+      <div class="help-section" id="tab-manage" style="padding-bottom:24px">
         <div class="help-card">
           <h4>&#43; Add New Tech</h4>
           <div class="step"><div class="step-num">1</div><p>Click <strong>+ Add Tech</strong> in the toolbar.</p></div>
           <div class="step"><div class="step-num">2</div><p>Fill in the tech's name, contact info, rating, territory, and travel range.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Click <strong>Submit for Review</strong>. The tech goes into the review queue — they are NOT live on the map yet.</p></div>
-          <div class="step"><div class="step-num">4</div><p>Open the <strong>Review Panel</strong> to approve or reject the submission.</p></div>
+          <div class="step"><div class="step-num">3</div><p>If the tech already exists in Salesforce, paste their <strong>Salesforce Contact Link</strong> in the field provided so the record stays connected.</p></div>
+          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. The tech goes into the review queue — they are NOT live on the map yet.</p></div>
+          <div class="step"><div class="step-num">5</div><p>An admin opens the <strong>Review Panel</strong> (🔒 password required) to approve or reject.</p></div>
         </div>
         <div class="help-card">
           <h4>&#9998; Suggest an Edit</h4>
           <div class="step"><div class="step-num">1</div><p>Click any pin to open the contact card.</p></div>
           <div class="step"><div class="step-num">2</div><p>Click <strong>✎ Suggest an Edit</strong> at the bottom of the card.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Update any fields — phone, email, rating, notes, etc.</p></div>
+          <div class="step"><div class="step-num">3</div><p>Update any fields — phone, email, rating, notes, Salesforce link, etc.</p></div>
           <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. Changes go to the review queue, not live immediately.</p></div>
         </div>
         <div class="help-card">
-          <h4>&#128203; Review Panel</h4>
-          <p>Click <strong>📋 Review</strong> in the toolbar (shows a red badge when items are pending). Review each submission and click <strong>✓ Approve</strong> or <strong>✗ Reject</strong>.</p>
+          <h4>&#128203; Review Panel <span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px;margin-left:4px">&#128274; ADMIN ONLY</span></h4>
+          <p>Click <strong>📋 Review</strong> in the toolbar — a red badge appears when items are pending. Enter the admin password when prompted. Review each submission and click <strong>✓ Approve</strong> or <strong>✗ Reject</strong>. Approved items are held until exported.</p>
         </div>
         <div class="help-card">
-          <h4>&#11015; Export to CSV for Salesforce</h4>
-          <p>After approving submissions, click <strong>⬇ Export to CSV for Salesforce</strong> in the Review Panel. This downloads a formatted CSV file with all approved new techs and edits, ready to import directly into Salesforce contacts. The export clears the approved queue automatically.</p>
+          <h4>&#11015; Export to CSV for Salesforce <span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px;margin-left:4px">&#128274; ADMIN ONLY</span></h4>
+          <p>After approving submissions, click <strong>⬇ Export to CSV for Salesforce</strong> in the Review Panel. Downloads a formatted CSV with all approved changes including Salesforce links, ready to import into Salesforce contacts. The queue clears automatically after export.</p>
         </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> The review queue saves in your browser between sessions. Export regularly so approved changes get into Salesforce and aren't lost if you clear your browser data.</div>
+        <div class="help-tip">&#128161; <strong>Tip:</strong> The review queue saves in your browser between sessions. Export regularly so approved changes get into Salesforce and are not lost if you clear your browser cache.</div>
       </div>
 
     </div>
