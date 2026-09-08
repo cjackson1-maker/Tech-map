@@ -501,7 +501,7 @@ function applyFilters(){
       markerLayer.addLayer(m);shown++;cnt[t.rating]=(cnt[t.rating]||0)+1;
       if(showRadius&&t._lat&&t.range>0){
         const c=RATING_COLOR[t.rating];
-        L.circle([t._lat,t._lng],{radius:t.range*1609.34,color:c.bd,fillColor:c.bg,fillOpacity:.08,weight:1,dashArray:'4,4'}).addTo(radiusLayer);
+        L.circle([t._lat,t._lng],{radius:t.range*1609.34,color:c.bd,fillColor:c.bd,fillOpacity:.12,weight:2,dashArray:'6,3'}).addTo(radiusLayer);
       }
     }
   }
@@ -613,7 +613,7 @@ async function findNearest(){
   L.marker([geo.lat,geo.lng],{icon:searchIcon,zIndexOffset:1000}).bindPopup(`<div style="color:#f7fafc;font-size:13px;font-weight:600">&#128205; Search Location</div><div style="font-size:11px;color:#a0aec0;margin-top:3px">${geo.display}</div>`).addTo(proxLayer);
   const scored=allMarkers.filter(m=>m._tech._lat&&m._tech._lng).map(m=>{const t=m._tech;const miles=distMiles(geo.lat,geo.lng,t._lat,t._lng);return{m,t,miles,time:estDrive(miles)};}).sort((a,b)=>a.miles-b.miles).slice(0,topN);
   scored.forEach(s=>{
-    L.polyline([[geo.lat,geo.lng],[s.t._lat,s.t._lng]],{color:'#4299e1',weight:1.5,opacity:.5,dashArray:'6,4'}).addTo(proxLayer);
+    L.polyline([[geo.lat,geo.lng],[s.t._lat,s.t._lng]],{color:'#63b3ed',weight:2.5,opacity:.85,dashArray:'8,4'}).addTo(proxLayer);
     markerLayer.removeLayer(s.m);
     const hl=L.marker([s.t._lat,s.t._lng],{icon:makeIcon(s.t.rating,true),zIndexOffset:500}).bindPopup(makePopup(s.t,{time:s.time,miles:Math.round(s.miles)}),{maxWidth:320});
     hl._tech=s.t;proxLayer.addLayer(hl);s.hlMarker=hl;
@@ -865,12 +865,12 @@ function flyToTech(name) {
 }
 
 const VENDOR_COVERAGE_COLORS = {
-  'Site Services Now':            {color:'#48bb78'},
-  'Connext':                      {color:'#63b3ed'},
-  'Techlink Services LLC':        {color:'#f6ad55'},
-  'Progressive Technologies Inc': {color:'#fc8181'},
-  'Veteranson Low Voltage':       {color:'#b794f4'},
-  'VGI Technology':               {color:'#fbd38d'},
+  'Site Services Now':            {color:'#00e676'},
+  'Connext':                      {color:'#2196f3'},
+  'Techlink Services LLC':        {color:'#ff9800'},
+  'Progressive Technologies Inc': {color:'#f44336'},
+  'Veteranson Low Voltage':       {color:'#ce93d8'},
+  'VGI Technology':               {color:'#ffeb3b'},
 };
 const STATE_CENTROIDS = {
   'Alabama':[32.7,-86.7],'Alaska':[64.2,-153.0],'Arizona':[34.0,-111.1],
@@ -937,9 +937,9 @@ function drawVendorCoverage(v) {
       radius: 165000,
       color: c.color,
       fillColor: c.color,
-      fillOpacity: 0.07,
-      weight: 1.2,
-      dashArray: '5,5',
+      fillOpacity: 0.18,
+      weight: 2.5,
+      dashArray: '8,4',
       interactive: false
     }).addTo(vendorLayer);
   });
@@ -1355,7 +1355,7 @@ function showOnMap() {
     // Draw line to nearest tech
     if (nearest) {
       L.polyline([[site.lat, site.lng],[nearest.lat, nearest.lng]], {
-        color: col, weight:1.5, opacity:.5, dashArray:'5,4'
+        color: col, weight:3, opacity:.9, dashArray:'8,4'
       }).addTo(multiSiteLayer);
       bounds.push([nearest.lat, nearest.lng]);
     }
