@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;margin:0;padding:0}
 #header{background:linear-gradient(135deg,#1a1f2e,#12161f);border-bottom:1px solid #2d3748;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
 #header h1{font-size:15px;font-weight:700;color:#f7fafc}
 #header .sub{font-size:11px;color:#718096;margin-top:1px}
@@ -44,8 +44,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
 #clear-btn{background:transparent;color:#718096;border:1px solid #2d3748;padding:5px 11px;border-radius:6px;font-size:13px;cursor:pointer;display:none}
 #clear-btn:hover{color:#e2e8f0}
 #prox-status{font-size:12px;color:#718096}
-#map-wrap{flex:1;position:relative;display:flex;overflow:hidden}
-#map{flex:1}
+#map-wrap{flex:1;position:relative;display:flex;overflow:hidden;min-height:0}
+#map{flex:1;min-width:0;min-height:400px}
 
 /* Popups */
 .leaflet-popup-content-wrapper{background:#1a1f2e !important;border:1px solid #2d3748 !important;border-radius:10px !important;box-shadow:0 10px 40px rgba(0,0,0,.6) !important;color:#e2e8f0 !important;min-width:240px}
@@ -245,15 +245,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
 #ms-export-btn:hover{background:#2c5282}
 .js-loading{font-size:12px;color:#718096;font-style:italic}
 .js-error{font-size:12px;color:#fc8181}
+.tl-leg{display:flex;align-items:center;gap:4px;color:#a0aec0}.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.vm-btn{padding:3px 9px;border-radius:12px;border:1px solid #4a5568;font-size:11px;font-weight:600;cursor:pointer;background:transparent;color:#a0aec0;transition:all .15s;white-space:nowrap}
+.vm-btn.on{background:#4a5568;color:#fff;border-color:#718096}
 </style>
 </head>
 <body>
-
 <div id="header">
   <div>
     <div style="display:flex;align-items:center;gap:10px">
       <h1>&#128205; Third-Party Tech Network</h1>
-      <span style="background:#2d3748;color:#90cdf4;border:1px solid #4299e1;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.04em">v2.0</span>
+      <span style="background:#2d3748;color:#90cdf4;border:1px solid #4299e1;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.04em">v2.3</span>
     </div>
     <div class="sub">Active technicians &middot; Internal Rating &middot; 99 techs &middot; Last updated Aug 2026 &middot; v1.5</div>
   </div>
@@ -313,13 +316,25 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
   <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;background:#fbd38d;border-radius:50%;display:inline-block;opacity:.7"></span>VGI</span>
   <span style="color:#4a5568;font-size:11px;margin-left:4px">| Click pin for details</span>
 </div>
+<div id="tl-bar" style="background:#0a0d14;border-bottom:1px solid #2d3748;padding:5px 16px;display:none;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap">
+  <span style="color:#a0aec0;font-weight:700;font-size:11px;white-space:nowrap">&#127970; VENDOR METROS:</span>
+  <button class="vm-btn on" id="vm-all" onclick="setVendorMetro('all')">All Vendors</button>
+  <button class="vm-btn" id="vm-ssn" onclick="setVendorMetro('Site Services Now')" style="border-color:#00e676;color:#00e676">&#11044; SSN</button>
+  <button class="vm-btn" id="vm-connext" onclick="setVendorMetro('Connext')" style="border-color:#2196f3;color:#2196f3">&#11044; Connext</button>
+  <button class="vm-btn" id="vm-techlink" onclick="setVendorMetro('Techlink Services LLC')" style="border-color:#fbbf24;color:#fbbf24">&#11044; Techlink</button>
+  <button class="vm-btn" id="vm-prog" onclick="setVendorMetro('Progressive Technologies Inc')" style="border-color:#f44336;color:#f44336">&#11044; Progressive</button>
+  <button class="vm-btn" id="vm-vet" onclick="setVendorMetro('Veteranson Low Voltage')" style="border-color:#ce93d8;color:#ce93d8">&#11044; Veteranson</button>
+  <button class="vm-btn" id="vm-vgi" onclick="setVendorMetro('VGI Technology')" style="border-color:#ffeb3b;color:#ffeb3b">&#11044; VGI</button>
+  <button class="vm-btn" id="vm-montra" onclick="setVendorMetro('Montra Solutions')" style="border-color:#4db6ac;color:#4db6ac">&#11044; Montra</button>
+  <span id="vm-count" style="color:#718096;font-size:11px;margin-left:auto"></span>
+</div>
 <div id="map-wrap">
   <div id="gap-panel">
     <h2>&#9888; Gap Analysis <button onclick="toggleGap()" style="background:transparent;border:none;color:#718096;cursor:pointer;font-size:14px">&#10005;</button></h2>
     <div id="gap-list"></div>
   </div>
   <div id="map"></div>
-  <div id="vendor-mode-indicator">&#127970; Vendors Only Mode</div>
+  <div id="vendor-mode-indicator">&#127970; Vendor View Active</div>
   <div id="result-panel">
     <h2>Nearest to <span id="rp-loc"></span></h2>
     <div id="result-list"></div>
@@ -410,7 +425,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;he
 </div>
 
 <script>
-const TECHS = [{"name": "Brad Johnson", "company": "Clearline Networks", "email": "brad@clearline.net", "phone": "(615) 440-1933", "city": "", "state": "Tennessee", "zip": "", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.12308287753261, "lng": -87.45998279164374}, {"name": "Erik Goddard", "company": "Clearline Networks", "email": "erik@clearline.net", "phone": "(615) 767-4579", "city": "Sweetwater", "state": "Tennessee", "zip": "37874", "street": "111 Tommy Loop", "rating": 2, "territory": "Central US Region", "notes": "", "range": 55, "lat": 35.6, "lng": -84.47}, {"name": "Daniel Allen", "company": "Clearline Networks", "email": "daniel@clearline.net", "phone": "(615) 707-1451", "city": "Joelton", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Pike", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.33, "lng": -86.88}, {"name": "Bradley Allen", "company": "Clearline Networks", "email": "bradley@clearline.net", "phone": "(615) 545-8101", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 36.17, "lng": -86.78}, {"name": "Gavin Johnson", "company": "Clearline Networks", "email": "", "phone": "(615) 815-0578", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.17, "lng": -86.78}, {"name": "Christopher Polk", "company": "Clearline Networks", "email": "christopher@clearline.net", "phone": "(615) 962-3271", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.17, "lng": -86.78}, {"name": "Correct Digital Displays", "company": "Correct Digital Displays", "email": "service@correctdd.com", "phone": "(815) 351-8207", "city": "Sandwich", "state": "Illinois", "zip": "60548", "street": "700 West Center Street", "rating": 2, "territory": "Central US Region", "notes": "They are still willing to work w/ us.  They prefer installs vs service calls", "range": 150, "lat": 41.65, "lng": -88.62}, {"name": "Josh Young", "company": "EDGE Copper and Fiber, Field Nation, LLC, Louis Pizitz Middle School", "email": "josh@edgecaf.com", "phone": "(205) 243-3738", "city": "Vestavia Hills", "state": "Alabama", "zip": "35209", "street": "429 Green Springs Highway", "rating": 1, "territory": "Central US Region", "notes": "Ayana Note-Top shelf", "range": 120, "lat": 33.45, "lng": -86.77}, {"name": "Mike VanDyke", "company": "Field Nation, LLC", "email": "mike.vandyke75@gmail.com", "phone": "(616) 308-3722", "city": "Holland", "state": "Michigan", "zip": "49424", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 42.79, "lng": -86.11}, {"name": "Tommy Hufnagel", "company": "Field Nation, LLC", "email": "tommy.k.huff@gmail.com", "phone": "(718) 607-9206", "city": "Eastpointe", "state": "Michigan", "zip": "48021", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 42.46, "lng": -82.95}, {"name": "Steve Ethington", "company": "Field Nation, LLC", "email": "stevee.fn@gmail.com", "phone": "(509) 771-9231", "city": "Taft", "state": "Tennessee", "zip": "35773", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Good tech. A couple of times had some issues with p2p setups and frying dishes, but solid backup to Josh.", "range": 200, "lat": 35.05, "lng": -86.47}, {"name": "Adam Ramsey", "company": "Field Nation, LLC", "email": "myitman@outlook.com", "phone": "(850) 867-7714", "city": "Columbus", "state": "Ohio", "zip": "43230", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Ayana Note-some issues with timeliness, but improved after setting expectation.", "range": 100, "lat": 39.96, "lng": -82.99}, {"name": "Bryan Scharch", "company": "Field Nation, LLC", "email": "bryan.scharch@gmail.com", "phone": "(931) 378-9199", "city": "Clarksville", "state": "Tennessee", "zip": "37042", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.53, "lng": -87.36}, {"name": "Carl Harvey", "company": "Field Nation, LLC", "email": "", "phone": "(336) 558-1169", "city": "Cincinnati", "state": "Ohio", "zip": "45239", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 39.1, "lng": -84.51}, {"name": "Brad Patterson", "company": "Field Nation, LLC", "email": "brad@ptsinal.com", "phone": "(256) 307-8071", "city": "Dadeville", "state": "Alabama", "zip": "36853", "street": "", "rating": 1, "territory": "Central US Region", "notes": "", "range": 200, "lat": 32.83, "lng": -85.76}, {"name": "Brian Frost", "company": "Field Nation, LLC", "email": "bfrost@frostbitetechnology.com", "phone": "(918) 770-9748", "city": "Claremore", "state": "Oklahoma", "zip": "74017", "street": "416 Ridge Avenue", "rating": 1, "territory": "Central US Region", "notes": "", "range": 150, "lat": 36.31, "lng": -95.62}, {"name": "Michael Thomas", "company": "Field Nation, LLC", "email": "", "phone": "(616) 430-7037", "city": "Wyoming", "state": "Michigan", "zip": "49519", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 42.91, "lng": -85.71}, {"name": "Jacob Gold", "company": "Field Nation, LLC", "email": "jacob.t.gold@gmail.com", "phone": "(210) 990-0205", "city": "Helotes", "state": "Texas", "zip": "78023", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 29.57, "lng": -98.69}, {"name": "Jared Lewis", "company": "Field Nation, LLC", "email": "jaredtechlewis@gmail.com", "phone": "(769) 243-0103", "city": "Byram", "state": "Mississippi", "zip": "39272", "street": "", "rating": 3, "territory": "Central US Region", "notes": "", "range": 75, "lat": 32.21, "lng": -90.24}, {"name": "Khalid Elsedeeg", "company": "Field Nation, LLC", "email": "khalid.elsedeeg9000@gmail.com", "phone": "(615) 481-0946", "city": "Nashville", "state": "Tennessee", "zip": "37013", "street": "", "rating": 1, "territory": "Central US Region", "notes": "", "range": 200, "lat": 36.17, "lng": -86.78}, {"name": "Nicholas Haines", "company": "Field Nation, LLC", "email": "nictopn@gmail.com", "phone": "(715) 316-9498", "city": "MEDFORD", "state": "Wisconsin", "zip": "54451", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 45.14, "lng": -90.34}, {"name": "Andrew Torres", "company": "Field Nation, LLC", "email": "wiremantx@hotmail.com", "phone": "(832) 385-4522", "city": "Conroe", "state": "Texas", "zip": "77301", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 30.31, "lng": -95.46}, {"name": "Jairhad Hemmons", "company": "Field Nation, LLC", "email": "jhemm33@gmail.com", "phone": "(219) 308-0617", "city": "Hammond", "state": "Indiana", "zip": "46320", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Is willing to travel into Chicago", "range": 100, "lat": 41.58, "lng": -87.5}, {"name": "Francisco Hernandez Mayagoitia", "company": "Field Nation, LLC", "email": "fhmaya@gmail.com", "phone": "(479) 312-0009", "city": "Montgomery", "state": "Alabama", "zip": "36109", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Lucas - Harry worked with him a lot and he was dependable and knowledgable from what I remember, could be slow on site sometimes", "range": 100, "lat": 32.38, "lng": -86.3}, {"name": "Milton Williams", "company": "Field Nation, LLC", "email": "syntinnio@gmail.com", "phone": "832-305-5765", "city": "Missouri City", "state": "Texas", "zip": "77489", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Dylan likes Milton. He laughs at my jokes and does a good job with Pixellots. Smart guy. His only downside is he's a medium level communicator, but he gets the work done", "range": 100, "lat": 29.62, "lng": -95.54}, {"name": "Praveen Roberts", "company": "Field Nation, LLC", "email": "proberts@icommonline.com", "phone": "256-653-0002", "city": "Huntsville", "state": "Alabama", "zip": "35811", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Dylan liked these guys. Only used them once but they were pretty professional", "range": 100, "lat": 34.73, "lng": -86.59}, {"name": "Scott Williams", "company": "Field Nation, LLC", "email": "scottycutco@gmail.com", "phone": "248-245-9411", "city": "Flint", "state": "Michigan", "zip": "48507", "street": "", "rating": 3, "territory": "Central US Region", "notes": "Dylan thinks Scott is good. He is a decent technician, but should be used more as a backup. He has lost DGB status after continually raising his prices with Drew.", "range": 75, "lat": 43.01, "lng": -83.69}, {"name": "Matt Higgins", "company": "Horizon Information Group, LLC", "email": "mhiggins.horizon@gmail.com", "phone": "(859) 250-4429", "city": "Crescent Springs", "state": "Kentucky", "zip": "41017", "street": "808 Winterberry Court", "rating": 2, "territory": "Central US Region", "notes": "Comms could be better but does decent work", "range": 150, "lat": 38.97, "lng": -84.58}, {"name": "Grant Smiley", "company": "Midnight Express", "email": "midnightexpress@comcast.net", "phone": "(276) 451-0567", "city": "Bristol", "state": "Tennessee", "zip": "37620", "street": "418 S Holston View Dr", "rating": 1, "territory": "Central US Region", "notes": "Obviously top tier. The creme de la creme - Dylan", "range": 200, "lat": 36.6, "lng": -82.19}, {"name": "Ali Rogers", "company": "Progressive Technologies Inc", "email": "arogers@thinkprogressive.com", "phone": "(713) 449-3881", "city": "Dallas", "state": "Texas", "zip": "75238", "street": "11110 Petal Street", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 32.78, "lng": -96.8}, {"name": "Progressive Technologies", "company": "Progressive Technologies Inc", "email": "mrogers@thinkprogressive.com", "phone": "(903) 816-2447", "city": "Memphis", "state": "Tennessee", "zip": "38118", "street": "3750 Old Getwell Rd", "rating": 2, "territory": "Central US Region", "notes": "", "range": 300, "lat": 35.15, "lng": -90.05}, {"name": "Keith Clowers", "company": "Progressive Technologies Inc", "email": "kclowers@thinkprogressive.com", "phone": "(479) 426-5422", "city": "Memphis", "state": "Tennessee", "zip": "38118", "street": "3750 Old Getwell Rd", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 35.15, "lng": -90.05}, {"name": "Blair Robinson", "company": "Alive Sound", "email": "blair@aliveatl.com", "phone": "(678) 596-6322", "city": "Atlanta", "state": "Georgia", "zip": "30307", "street": "1774 Indiana Ave NE", "rating": 1, "territory": "East Coast Region", "notes": "Ayana note-He's Blair. Top shelf.", "range": 200, "lat": 33.75, "lng": -84.39}, {"name": "Zachary Saliba", "company": "BoMark Technology", "email": "zsaliba@bomarktechnologygroup.com", "phone": "(443) 744-7185", "city": "Hampstead", "state": "Maryland", "zip": "21074", "street": "838 S Main Street", "rating": 3, "territory": "East Coast Region", "notes": "Murff - a lot of change over within the company, they got techs who can do the work but the original players are all gone", "range": 75, "lat": 39.6, "lng": -76.84}, {"name": "Jeffrey Meek", "company": "BoMark Technology", "email": "jmeek@bomarktechnologygroup.com", "phone": "(443) 834-9329", "city": "Hampstead", "state": "Maryland", "zip": "21074", "street": "838 South Main Street", "rating": 3, "territory": "East Coast Region", "notes": "", "range": 75, "lat": 39.6, "lng": -76.84}, {"name": "Jerrod Snyder", "company": "CNIC Inc.", "email": "jsnyder302@yahoo.com", "phone": "(704) 607-4150", "city": "Charlotte", "state": "North Carolina", "zip": "28227", "street": "2200 Crown Centre Drive Ste C", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 35.23, "lng": -80.84}, {"name": "Alvaro Carrascosa", "company": "CNIC Inc.", "email": "alvaro@techtab.io", "phone": "(786) 863-0176", "city": "", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 35.14004690939059, "lng": -79.84286281896189}, {"name": "Dayton Snyder", "company": "CNIC Inc.", "email": "", "phone": "(704) 998-9912", "city": "", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 35.87835394266242, "lng": -79.11728082012334}, {"name": "Stephen Allen", "company": "Field Nation, LLC", "email": "wiredyet@gmail.com", "phone": "(845) 702-2880", "city": "Pleasant Valley", "state": "New York", "zip": "12569", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Ayana notes-needs to be moved to FN-no longer associated with Connext. Top tier tech.  Lucas- good tech but bad interpersonally; likes to add fees for anything he can think of", "range": 250, "lat": 41.75, "lng": -73.83}, {"name": "Donald L Kendrick Jr", "company": "Field Nation, LLC", "email": "dkendrickjr@live.com", "phone": "(434) 336-2043", "city": "Capron", "state": "Virginia", "zip": "23829", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Lucas - good tech, knows our systems; just in an area where we kind of have Taylor and Ashley to covereverything that isn't basically coastline", "range": 100, "lat": 36.71, "lng": -77.24}, {"name": "Kenneth Ellison", "company": "Field Nation, LLC", "email": "abctraktmedia@gmail.com", "phone": "(901) 326-8325", "city": "Fort Lauderdale", "state": "Florida", "zip": "33315", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Dylan thinks Kenneth (who is also technically named Dylan, though I haven't seen him at the meetings) is a great tech. Highly recommend for any southern florida jobs", "range": 150, "lat": 26.12, "lng": -80.14}, {"name": "Jamaal Johnson", "company": "Field Nation, LLC", "email": "", "phone": "(870) 355-1853", "city": "Plattsburgh", "state": "New York", "zip": "12901", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Dylan likes Jamaal. Great and experienced tech, with good customer service skills", "range": 150, "lat": 44.69, "lng": -73.45}, {"name": "Ashley Smith", "company": "Field Nation, LLC", "email": "universal24llc@gmail.com", "phone": "(443) 506-0072", "city": "Temple Hills", "state": "Maryland", "zip": "20748", "street": "6424 Glen Oak Drive", "rating": 2, "territory": "East Coast Region", "notes": "Dylan thinks Ashley is a solid technician. He does good work, but I've had to correct his work a couple of times.", "range": 100, "lat": 38.81, "lng": -76.94}, {"name": "William Broyhill", "company": "Field Nation, LLC", "email": "broyhillitconsulting@yahoo.com", "phone": "(720) 884-7803", "city": "Anthony", "state": "Florida", "zip": "33647", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Lucas - worked with him a couple times; decent tech that knows the systems", "range": 200, "lat": 29.27, "lng": -82.12}, {"name": "Ted Glover", "company": "Field Nation, LLC", "email": "tglover5337@me.com", "phone": "(850) 240-5201", "city": "Crestview", "state": "Florida", "zip": "32539", "street": "", "rating": 3, "territory": "East Coast Region", "notes": "", "range": 75, "lat": 30.77, "lng": -86.57}, {"name": "Ismayil Novruzov", "company": "Field Nation, LLC", "email": "ismail.nyw@gmail.com", "phone": "(347) 986-7297", "city": "Westchase", "state": "Florida", "zip": "33626", "street": "", "rating": 4, "territory": "East Coast Region", "notes": "", "range": 50, "lat": 28.05, "lng": -82.59}, {"name": "Dylan Fellows", "company": "Field Nation, LLC", "email": "dylanjfellows@gmail.com", "phone": "(678) 646-1549", "city": "Grantville", "state": "Georgia", "zip": "30220", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Personality hire - could use interpersonal coaching and sometimes needs a bit of hand-holding on sites; No notes needed - he's the best of the best. The truest Golden Boy  Ayana 2nds this-great potent", "range": 150, "lat": 33.23, "lng": -84.84}, {"name": "Vincent Loera", "company": "Field Nation, LLC", "email": "vincentloerac@gmail.com", "phone": "(678) 978-3838", "city": "Peachtree City", "state": "Georgia", "zip": "30269", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Dylan thinks Vincent is a good tech. I request photos from him and have had to ask him to clean up some work a couple of times, but you only have to correct a problem once with him and he won't do it ", "range": 100, "lat": 33.4, "lng": -84.59}, {"name": "Tora McCall", "company": "Field Nation, LLC", "email": "tora.tpcd@gmail.com", "phone": "(229) 376-5201", "city": "Albany", "state": "Georgia", "zip": "31707", "street": "", "rating": 3, "territory": "East Coast Region", "notes": "Ayana note-Tora is a solid tech. Schedule fills up and he gets a little anxious about working with schools or pressure situations.", "range": 75, "lat": 31.58, "lng": -84.16}, {"name": "Vic Maggio", "company": "Gemini Mechanical LLC", "email": "vicmaggio66@gmail.com", "phone": "(757) 784-2915", "city": "Williamsburg", "state": "Virginia", "zip": "23185", "street": "293 East Queens Drive", "rating": 2, "territory": "East Coast Region", "notes": "Vic does great work, but usually it's Eric that goes out for jobs - Dylan", "range": 40, "lat": 37.27, "lng": -76.71}, {"name": "Erik Colson", "company": "Gemini Mechanical LLC", "email": "erikcolson38@gmail.com", "phone": "(757) 810-5343", "city": "Gloucester Point", "state": "Virginia", "zip": "23062", "street": "1552 York River Drive", "rating": 3, "territory": "East Coast Region", "notes": "Eric often needs assistance, but he does get the job done. - Dylan", "range": 120, "lat": 37.27, "lng": -76.5}, {"name": "Rob Shelton", "company": "KNC Technologies", "email": "robbys@knctech.us", "phone": "(336) 575-5805", "city": "Winston-Salem", "state": "North Carolina", "zip": "27107", "street": "12845 Old U.S. Highway 52", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 36.1, "lng": -80.24}, {"name": "Josef Myers", "company": "Site Services Now", "email": "", "phone": "(850) 419-2373", "city": "Altoona", "state": "Pennsylvania", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Pennsylvania | Maryland", "range": 100, "lat": 40.51, "lng": -78.4}, {"name": "Hector Vasquez", "company": "Site Services Now", "email": "lawproc009@outlook.com", "phone": "(919) 609-9228", "city": "Hillsborough", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "North Carolina | Virginia | South Carolina", "range": 200, "lat": 36.07, "lng": -79.1}, {"name": "Charles Rhett Becker", "company": "Site Services Now", "email": "", "phone": "(336) 639-0622", "city": "High Point", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "North Carolina | Virginia | West Virginia", "range": 150, "lat": 35.96, "lng": -80.01}, {"name": "Osee Relaford III", "company": "Site Services Now", "email": "", "phone": "(912) 996-5586", "city": "Nahunta", "state": "Georgia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 32.827487308327754, "lng": -84.06089786779295}, {"name": "James Rennard", "company": "Site Services Now", "email": "", "phone": "(904) 449-3249", "city": "Jacksonville", "state": "Florida", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Does good work, but frequent reschedules or is late to site - Autumn   \nFlorida | Georgia", "range": 100, "lat": 30.33, "lng": -81.66}, {"name": "Benjamin Sizemore", "company": "Site Services Now", "email": "", "phone": "(540) 235-7171", "city": "St. George", "state": "Virginia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 37.67507491149643, "lng": -80.25232444889909}, {"name": "Worked with him a handful of times and he's thorough when it comes to troubleshooting - Autumn", "company": "Site Services Now", "email": "", "phone": "(423) 298-1416", "city": "Nahunta", "state": "Georgia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Georgia | South Carolina", "range": 100, "lat": 31.749820759685768, "lng": -83.39143153903463}, {"name": "Austin Kimball", "company": "Swiftwired Computer & Security Solutions", "email": "austin@swiftwiredcss.com", "phone": "(603) 348-0202", "city": "Franklin", "state": "New Hampshire", "zip": "3235", "street": "256 S Main St", "rating": 1, "territory": "East Coast Region", "notes": "Does great work. DGB - Dylan", "range": 150, "lat": 43.44, "lng": -71.65}, {"name": "Dain Eide", "company": "Advantage Cabling", "email": "deide@advantagecabling.com", "phone": "(602) 791-9802", "city": "Phoenix", "state": "Arizona", "zip": "85045", "street": "16412 South 18th Drive", "rating": 2, "territory": "West Coast Region", "notes": "Lucas - good kid; not a ton of experience with our systems but works with the county/district for their low voltage work and helped us out when Connext botched some visits in the area", "range": 100, "lat": 33.45, "lng": -112.07}, {"name": "Paul Bulris", "company": "Field Nation, LLC", "email": "baxterspace@gmail.com", "phone": "(229) 444-2534", "city": "Tucson", "state": "Arizona", "zip": "85705", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - Haven't worked with him that much but he is knowledgable what I found.", "range": 100, "lat": 32.22, "lng": -110.97}, {"name": "Derek Van Den Top", "company": "Field Nation, LLC", "email": "dvandentop@msn.com", "phone": "(605) 359-3672", "city": "Sioux Falls", "state": "South Dakota", "zip": "57108", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Adib - I worked with him on all types of works. Solid so far.", "range": 200, "lat": 43.55, "lng": -96.73}, {"name": "Mike Mcleod", "company": "Field Nation, LLC", "email": "mike.mcleod@x5networks.com", "phone": "(510) 846-8035", "city": "Union City", "state": "California", "zip": "94587", "street": "Union City", "rating": 1, "territory": "West Coast Region", "notes": "5 start tech of Northern CA/C7 certified/$$$", "range": 150, "lat": 37.59, "lng": -122.02}, {"name": "Matthew Cobra", "company": "Field Nation, LLC", "email": "matt@cobraspec.com", "phone": "(408) 318-5124", "city": "Valley Springs", "state": "California", "zip": "95252", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 38.19, "lng": -120.83}, {"name": "Scott Roberts", "company": "Field Nation, LLC", "email": "sroberts597@gmail.com", "phone": "(702) 969-8210", "city": "Las Vegas", "state": "Nevada", "zip": "89119", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan thinks Scott is a good tech. Technically a DGB but he is close to being downgradedl. He does great work but he often reschedules with me", "range": 100, "lat": 36.17, "lng": -115.14}, {"name": "Nick Newberry", "company": "Field Nation, LLC", "email": "kingnewby@gmail.com", "phone": "(208) 713-0759", "city": "Tecumseh", "state": "Kansas", "zip": "66542", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Scheduling can be an issue at times so may need update about procedure and good communication on eta expectation. Great work though and never an issue.", "range": 200, "lat": 39.02, "lng": -95.56}, {"name": "Ronald Rueppel", "company": "Field Nation, LLC", "email": "rueppelwork@gmail.com", "phone": "(208) 713-1321", "city": "Middleton", "state": "Idaho", "zip": "83644", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Dylan thinks he's a great tech - a proper Boise Boy and a DGB", "range": 200, "lat": 43.71, "lng": -116.62}, {"name": "Mark Grover", "company": "Field Nation, LLC", "email": "", "phone": "(612) 206-1292", "city": "Rexburg", "state": "Idaho", "zip": "83440", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Have done some new installs and break fixes. Moves a little slow, but good quality.", "range": 100, "lat": 43.83, "lng": -111.79}, {"name": "Brian Field", "company": "Field Nation, LLC", "email": "bombguy64@hotmail.com", "phone": "(808) 348-4560", "city": "Waianae", "state": "Hawaii", "zip": "96792", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 21.44, "lng": -158.18}, {"name": "Noel Francis", "company": "Field Nation, LLC", "email": "noel2usa@msn.com", "phone": "(716) 228-2541", "city": "Anchorage", "state": "Alaska", "zip": "99524", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I worked with him on multiple AK schools. Very very slow to get response from him but he does a good job.", "range": 100, "lat": 61.22, "lng": -149.9}, {"name": "Markus Paminger", "company": "Field Nation, LLC", "email": "markuspaminger@gmail.com", "phone": "(914) 393-5073", "city": "Missoula", "state": "Montana", "zip": "59802", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Schedule fills up, but does great work on break fix/installs.", "range": 100, "lat": 46.87, "lng": -114.01}, {"name": "Matthew Ramos", "company": "Field Nation, LLC", "email": "m-ramos33@live.com", "phone": "928-241-2542", "city": "Mesquite", "state": "Nevada", "zip": "89027", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan liked working with Matthew, but he's in the middle of nowhere.", "range": 100, "lat": 36.8, "lng": -114.07}, {"name": "Michael Senoran", "company": "Field Nation, LLC", "email": "mykulpc@gmail.com", "phone": "661-865-6505", "city": "Bakersfield", "state": "California", "zip": "93306", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan thought he did a fine job. He's a bit weird, but we don't pay them for their personalities", "range": 100, "lat": 35.37, "lng": -119.02}, {"name": "John Nygaard", "company": "Field Nation, LLC, Solen High School", "email": "ndnygaard@yahoo.com", "phone": "(701) 595-3016", "city": "Bismarck", "state": "North Dakota", "zip": "58501", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "lucas - man is scared to climb ladders, okay for VPU troubleshooting and really simple stuff", "range": 200, "lat": 46.81, "lng": -100.78}, {"name": "Trevor Green", "company": "Green Real Estate Inspections", "email": "", "phone": "(949) 610-3100", "city": "Newport Beach", "state": "California", "zip": "92660", "street": "2618 San Miguel Drive Suite 518", "rating": 1, "territory": "West Coast Region", "notes": "5 start tech of South CA/Break fix rate is about $500", "range": 150, "lat": 33.62, "lng": -117.93}, {"name": "Neil Hurd", "company": "HEI INC", "email": "nhurd@heinm.com", "phone": "(505) 710-7226", "city": "Rio Rancho", "state": "New Mexico", "zip": "87124", "street": "500 Laser Rd NE", "rating": 1, "territory": "West Coast Region", "notes": "Neil's team is fantastic. Services all of NM, but is based out of Albuquerque. DGBs for sure - Dylan", "range": 150, "lat": 35.23, "lng": -106.69}, {"name": "Barry Casey", "company": "Montra Solutions", "email": "net.works.dispatch@gmail.com", "phone": "(425) 287-8781", "city": "", "state": "Washington", "zip": "98026", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 120, "lat": 46.64245755149418, "lng": -120.98185975890136}, {"name": "Ronald Rueppel", "company": "Montra Solutions", "email": "", "phone": "(208) 713-1321", "city": "", "state": "Idaho", "zip": "83644", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Lucas - confirm this with Ayana but I think this is is the tech that worked for Montra but would decline jobs from Yancey and then wait for us to hit him up on FN to get a better rate", "range": 200, "lat": 44.23981510044724, "lng": -114.62809363103486}, {"name": "Justin Foresman", "company": "Montra Solutions", "email": "libertyservce333@gmail.com", "phone": "(360) 932-7579", "city": "", "state": "Washington", "zip": "98674", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Reliable Yancey tech. -Brandon", "range": 200, "lat": 46.952704995265115, "lng": -120.35717490579854}, {"name": "Bob Ritterodt", "company": "Rapelje High School", "email": "bobritterodt@yahoo.com", "phone": "(406) 321-2154", "city": "Rapelje", "state": "Montana", "zip": "59067", "street": "714 Main Street", "rating": 2, "territory": "West Coast Region", "notes": "Good technician. Best as a backup - Dylan", "range": 100, "lat": 45.96, "lng": -109.57}, {"name": "Eric du Toit", "company": "Salt Creek Integrated", "email": "eric@saltcreekintegrated.com", "phone": "(719) 641-5727", "city": "Colorado Springs", "state": "Colorado", "zip": "80907", "street": "1295 Hans Brinker Lane", "rating": 1, "territory": "West Coast Region", "notes": "Eric's team does great work - Dylan", "range": 150, "lat": 38.83, "lng": -104.82}, {"name": "Matt Harcey", "company": "Site Services Now", "email": "matthew@ultimateprintsolutions.com", "phone": "(602) 703-1937", "city": "Avondale", "state": "Arizona", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Adib - He is a solid tech.", "range": 150, "lat": 34.49508873068452, "lng": -111.8896019845151}, {"name": "Ali Khanafer", "company": "Site Services Now", "email": "", "phone": "(323) 439-8415", "city": "La Puente", "state": "California", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I did couple of troubleshooting and OCR install. So far so good.", "range": 100, "lat": 37.189310802932496, "lng": -119.38297696801884}, {"name": "Jobani Valdez", "company": "Site Services Now", "email": "", "phone": "(323) 206-0064", "city": "Riverside", "state": "California", "zip": "", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "Adib - He had issue climbing ladder which I was able to do that with Trevor using ladder. Other than that, does his job.", "range": 75, "lat": 33.98, "lng": -117.37}, {"name": "Rudy Aldama", "company": "Site Services Now", "email": "", "phone": "(916) 803-3686", "city": "Sebastopol", "state": "California", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - Good tech and does effective job on swapping and troubleshooting\nCalifornia | Nevada", "range": 100, "lat": 36.44440082642879, "lng": -120.25123280030115}, {"name": "Steven Rocha", "company": "Site Services Now", "email": "", "phone": "(209) 765-5904", "city": "Sutter Creek", "state": "California", "zip": "", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "Adib - He does great job on troubleshooting and swap but I had issues with him on running new line for OCR install.", "range": 75, "lat": 37.43154091553085, "lng": -119.9614487278198}, {"name": "EJ Senteney-Shparago", "company": "Site Services Now", "email": "", "phone": "(971) 701-5433", "city": "Spokane", "state": "Washington", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Reliable tech that goes above and beyond-Brandon \n-Washington | Oregon", "range": 150, "lat": 47.66, "lng": -117.43}, {"name": "Josh Weickum", "company": "Site Services Now", "email": "joshweickum@gmail.com", "phone": "(307) 262-8083", "city": "Gillette", "state": "Wyoming", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - He is very good at his job.", "range": 100, "lat": 44.29, "lng": -105.5}, {"name": "Ricky Emery", "company": "Site Services Now", "email": "", "phone": "(702) 677-5440", "city": "Las Vegas", "state": "Nevada", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I worked with him on NV state, knows his work.", "range": 100, "lat": 36.17, "lng": -115.14}, {"name": "Mark de Amici", "company": "Site Services Now", "email": "markd@datalineltd.net", "phone": "(801) 510-8145", "city": "Evanston", "state": "Wyoming", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Wyoming | Utah | Idaho", "range": 100, "lat": 41.27, "lng": -110.96}, {"name": "Michael Amici", "company": "Site Services Now", "email": "", "phone": "(505) 204-2382", "city": "USAF Academy", "state": "Colorado", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 38.348393349408234, "lng": -106.14525379706646}, {"name": "Evan Moses", "company": "Site Services Now", "email": "", "phone": "(425) 577-4584", "city": "Gig Harbor", "state": "Washington", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Great tech that always puts in great work -Brandon", "range": 150, "lat": 47.33, "lng": -122.58}, {"name": "Colter Zimmerman", "company": "Site Services Now", "email": "", "phone": "(406) 381-7356", "city": "Alberton", "state": "Montana", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 47.45599098615593, "lng": -110.23403834981298}, {"name": "Kyle Halter", "company": "Site Services Now", "email": "m1racer@msn.com", "phone": "(406) 580-0355", "city": "Belgrade", "state": "Montana", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 47.391405237239006, "lng": -110.0324291412899}, {"name": "Nicholas Thomas Zelinka", "company": "Site Services Now", "email": "", "phone": "(762) 226-0262", "city": "Basalt", "state": "Colorado", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Colorado | Kansas", "range": 100, "lat": 39.05796494632752, "lng": -104.74301477763301}, {"name": "Claire Catignani", "company": "Clearline Networks", "email": "claire@clearline.net", "phone": "(615) 939-5113", "city": "", "state": "Tennessee", "zip": "", "street": "", "rating": 2, "territory": "", "notes": "", "range": 100, "lat": 35.705655003533366, "lng": -86.61673498996284}, {"name": "Bryson Fuller", "company": "Fuller's Structured Cabling", "email": "fsclubbock@gmail.com", "phone": "(806) 470-9256", "city": "Lubbock", "state": "Texas", "zip": "", "street": "", "rating": 1, "territory": "", "notes": "Bryson is a solid technician. Use him for anythng around Lubbock/Midlands. DGB - Dylan", "range": 150, "lat": 33.58, "lng": -101.86}, {"name": "Chance Reuppel", "company": "Timeless Tech Services LLC", "email": "timelesstechservicesllc@gmail.com", "phone": "(208) 807-7184", "city": "Birmingham", "state": "Alabama", "zip": "", "street": "", "rating": 1, "territory": "", "notes": "Great technician, but he really only services around Steven's territory in AL. - Dylan", "range": 150, "lat": 33.52, "lng": -86.8}];
+const TECHS = [{"name": "Brad Johnson", "company": "Clearline Networks", "email": "brad@clearline.net", "phone": "(615) 440-1933", "city": "", "state": "Tennessee", "zip": "", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.12308287753261, "lng": -87.45998279164374}, {"name": "Erik Goddard", "company": "Clearline Networks", "email": "erik@clearline.net", "phone": "(615) 767-4579", "city": "Sweetwater", "state": "Tennessee", "zip": "37874", "street": "111 Tommy Loop", "rating": 2, "territory": "Central US Region", "notes": "", "range": 55, "lat": 35.6, "lng": -84.47}, {"name": "Daniel Allen", "company": "Clearline Networks", "email": "daniel@clearline.net", "phone": "(615) 707-1451", "city": "Joelton", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Pike", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.33, "lng": -86.88}, {"name": "Bradley Allen", "company": "Clearline Networks", "email": "bradley@clearline.net", "phone": "(615) 545-8101", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 36.17, "lng": -86.78}, {"name": "Gavin Johnson", "company": "Clearline Networks", "email": "", "phone": "(615) 815-0578", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.17, "lng": -86.78}, {"name": "Christopher Polk", "company": "Clearline Networks", "email": "christopher@clearline.net", "phone": "(615) 962-3271", "city": "Nashville", "state": "Tennessee", "zip": "37080", "street": "5925 Clarksville Highway", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.17, "lng": -86.78}, {"name": "Correct Digital Displays", "company": "Correct Digital Displays", "email": "service@correctdd.com", "phone": "(815) 351-8207", "city": "Sandwich", "state": "Illinois", "zip": "60548", "street": "700 West Center Street", "rating": 2, "territory": "Central US Region", "notes": "They are still willing to work w/ us.  They prefer installs vs service calls", "range": 150, "lat": 41.65, "lng": -88.62}, {"name": "Josh Young", "company": "EDGE Copper and Fiber, Field Nation, LLC, Louis Pizitz Middle School", "email": "josh@edgecaf.com", "phone": "(205) 243-3738", "city": "Vestavia Hills", "state": "Alabama", "zip": "35209", "street": "429 Green Springs Highway", "rating": 1, "territory": "Central US Region", "notes": "Ayana Note-Top shelf", "range": 120, "lat": 33.45, "lng": -86.77}, {"name": "Mike VanDyke", "company": "Field Nation, LLC", "email": "mike.vandyke75@gmail.com", "phone": "(616) 308-3722", "city": "Holland", "state": "Michigan", "zip": "49424", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 42.79, "lng": -86.11}, {"name": "Tommy Hufnagel", "company": "Field Nation, LLC", "email": "tommy.k.huff@gmail.com", "phone": "(718) 607-9206", "city": "Eastpointe", "state": "Michigan", "zip": "48021", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 42.46, "lng": -82.95}, {"name": "Steve Ethington", "company": "Field Nation, LLC", "email": "stevee.fn@gmail.com", "phone": "(509) 771-9231", "city": "Taft", "state": "Tennessee", "zip": "35773", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Good tech. A couple of times had some issues with p2p setups and frying dishes, but solid backup to Josh.", "range": 200, "lat": 35.05, "lng": -86.47}, {"name": "Adam Ramsey", "company": "Field Nation, LLC", "email": "myitman@outlook.com", "phone": "(850) 867-7714", "city": "Columbus", "state": "Ohio", "zip": "43230", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Ayana Note-some issues with timeliness, but improved after setting expectation.", "range": 100, "lat": 39.96, "lng": -82.99}, {"name": "Bryan Scharch", "company": "Field Nation, LLC", "email": "bryan.scharch@gmail.com", "phone": "(931) 378-9199", "city": "Clarksville", "state": "Tennessee", "zip": "37042", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 36.53, "lng": -87.36}, {"name": "Carl Harvey", "company": "Field Nation, LLC", "email": "", "phone": "(336) 558-1169", "city": "Cincinnati", "state": "Ohio", "zip": "45239", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 39.1, "lng": -84.51}, {"name": "Brad Patterson", "company": "Field Nation, LLC", "email": "brad@ptsinal.com", "phone": "(256) 307-8071", "city": "Dadeville", "state": "Alabama", "zip": "36853", "street": "", "rating": 1, "territory": "Central US Region", "notes": "", "range": 200, "lat": 32.83, "lng": -85.76}, {"name": "Brian Frost", "company": "Field Nation, LLC", "email": "bfrost@frostbitetechnology.com", "phone": "(918) 770-9748", "city": "Claremore", "state": "Oklahoma", "zip": "74017", "street": "416 Ridge Avenue", "rating": 1, "territory": "Central US Region", "notes": "", "range": 150, "lat": 36.31, "lng": -95.62}, {"name": "Michael Thomas", "company": "Field Nation, LLC", "email": "", "phone": "(616) 430-7037", "city": "Wyoming", "state": "Michigan", "zip": "49519", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 42.91, "lng": -85.71}, {"name": "Jacob Gold", "company": "Field Nation, LLC", "email": "jacob.t.gold@gmail.com", "phone": "(210) 990-0205", "city": "Helotes", "state": "Texas", "zip": "78023", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 29.57, "lng": -98.69}, {"name": "Jared Lewis", "company": "Field Nation, LLC", "email": "jaredtechlewis@gmail.com", "phone": "(769) 243-0103", "city": "Byram", "state": "Mississippi", "zip": "39272", "street": "", "rating": 3, "territory": "Central US Region", "notes": "", "range": 75, "lat": 32.21, "lng": -90.24}, {"name": "Khalid Elsedeeg", "company": "Field Nation, LLC", "email": "khalid.elsedeeg9000@gmail.com", "phone": "(615) 481-0946", "city": "Nashville", "state": "Tennessee", "zip": "37013", "street": "", "rating": 1, "territory": "Central US Region", "notes": "", "range": 200, "lat": 36.17, "lng": -86.78}, {"name": "Nicholas Haines", "company": "Field Nation, LLC", "email": "nictopn@gmail.com", "phone": "(715) 316-9498", "city": "MEDFORD", "state": "Wisconsin", "zip": "54451", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 45.14, "lng": -90.34}, {"name": "Andrew Torres", "company": "Field Nation, LLC", "email": "wiremantx@hotmail.com", "phone": "(832) 385-4522", "city": "Conroe", "state": "Texas", "zip": "77301", "street": "", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 30.31, "lng": -95.46}, {"name": "Jairhad Hemmons", "company": "Field Nation, LLC", "email": "jhemm33@gmail.com", "phone": "(219) 308-0617", "city": "Hammond", "state": "Indiana", "zip": "46320", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Is willing to travel into Chicago", "range": 100, "lat": 41.58, "lng": -87.5}, {"name": "Francisco Hernandez Mayagoitia", "company": "Field Nation, LLC", "email": "fhmaya@gmail.com", "phone": "(479) 312-0009", "city": "Montgomery", "state": "Alabama", "zip": "36109", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Lucas - Harry worked with him a lot and he was dependable and knowledgable from what I remember, could be slow on site sometimes", "range": 100, "lat": 32.38, "lng": -86.3}, {"name": "Milton Williams", "company": "Field Nation, LLC", "email": "syntinnio@gmail.com", "phone": "832-305-5765", "city": "Missouri City", "state": "Texas", "zip": "77489", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Dylan likes Milton. He laughs at my jokes and does a good job with Pixellots. Smart guy. His only downside is he's a medium level communicator, but he gets the work done", "range": 100, "lat": 29.62, "lng": -95.54}, {"name": "Praveen Roberts", "company": "Field Nation, LLC", "email": "proberts@icommonline.com", "phone": "256-653-0002", "city": "Huntsville", "state": "Alabama", "zip": "35811", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Dylan liked these guys. Only used them once but they were pretty professional", "range": 100, "lat": 34.73, "lng": -86.59}, {"name": "Scott Williams", "company": "Field Nation, LLC", "email": "scottycutco@gmail.com", "phone": "248-245-9411", "city": "Flint", "state": "Michigan", "zip": "48507", "street": "", "rating": 3, "territory": "Central US Region", "notes": "Dylan thinks Scott is good. He is a decent technician, but should be used more as a backup. He has lost DGB status after continually raising his prices with Drew.", "range": 75, "lat": 43.01, "lng": -83.69}, {"name": "Matt Higgins", "company": "Horizon Information Group, LLC", "email": "mhiggins.horizon@gmail.com", "phone": "(859) 250-4429", "city": "Cincinnati", "state": "Ohio", "zip": "45255", "street": "", "rating": 2, "territory": "Central US Region", "notes": "Comms could be better but does decent work", "range": 150, "lat": 39.10, "lng": -84.51}, {"name": "Grant Smiley", "company": "Midnight Express", "email": "midnightexpress@comcast.net", "phone": "(276) 451-0567", "city": "Bristol", "state": "Tennessee", "zip": "37620", "street": "418 S Holston View Dr", "rating": 1, "territory": "Central US Region", "notes": "Obviously top tier. The creme de la creme - Dylan", "range": 200, "lat": 36.6, "lng": -82.19}, {"name": "Ali Rogers", "company": "Progressive Technologies Inc", "email": "arogers@thinkprogressive.com", "phone": "(713) 449-3881", "city": "Dallas", "state": "Texas", "zip": "75238", "street": "11110 Petal Street", "rating": 2, "territory": "Central US Region", "notes": "", "range": 200, "lat": 32.78, "lng": -96.8}, {"name": "Progressive Technologies", "company": "Progressive Technologies Inc", "email": "mrogers@thinkprogressive.com", "phone": "(903) 816-2447", "city": "Memphis", "state": "Tennessee", "zip": "38118", "street": "3750 Old Getwell Rd", "rating": 2, "territory": "Central US Region", "notes": "", "range": 300, "lat": 35.15, "lng": -90.05}, {"name": "Keith Clowers", "company": "Progressive Technologies Inc", "email": "kclowers@thinkprogressive.com", "phone": "(479) 426-5422", "city": "Memphis", "state": "Tennessee", "zip": "38118", "street": "3750 Old Getwell Rd", "rating": 2, "territory": "Central US Region", "notes": "", "range": 100, "lat": 35.15, "lng": -90.05}, {"name": "Blair Robinson", "company": "Alive Sound", "email": "blair@aliveatl.com", "phone": "(678) 596-6322", "city": "Atlanta", "state": "Georgia", "zip": "30307", "street": "1774 Indiana Ave NE", "rating": 1, "territory": "East Coast Region", "notes": "Ayana note-He's Blair. Top shelf.", "range": 200, "lat": 33.75, "lng": -84.39}, {"name": "Zachary Saliba", "company": "BoMark Technology", "email": "zsaliba@bomarktechnologygroup.com", "phone": "(443) 744-7185", "city": "Hampstead", "state": "Maryland", "zip": "21074", "street": "838 S Main Street", "rating": 3, "territory": "East Coast Region", "notes": "Murff - a lot of change over within the company, they got techs who can do the work but the original players are all gone", "range": 75, "lat": 39.6, "lng": -76.84}, {"name": "Jeffrey Meek", "company": "BoMark Technology", "email": "jmeek@bomarktechnologygroup.com", "phone": "(443) 834-9329", "city": "Hampstead", "state": "Maryland", "zip": "21074", "street": "838 South Main Street", "rating": 3, "territory": "East Coast Region", "notes": "", "range": 75, "lat": 39.6, "lng": -76.84}, {"name": "Jerrod Snyder", "company": "CNIC Inc.", "email": "jsnyder302@yahoo.com", "phone": "(704) 607-4150", "city": "Charlotte", "state": "North Carolina", "zip": "28227", "street": "2200 Crown Centre Drive Ste C", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 35.23, "lng": -80.84}, {"name": "Alvaro Carrascosa", "company": "CNIC Inc.", "email": "alvaro@techtab.io", "phone": "(786) 863-0176", "city": "", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 35.14004690939059, "lng": -79.84286281896189}, {"name": "Dayton Snyder", "company": "CNIC Inc.", "email": "", "phone": "(704) 998-9912", "city": "", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 35.87835394266242, "lng": -79.11728082012334}, {"name": "Stephen Allen", "company": "Field Nation, LLC", "email": "wiredyet@gmail.com", "phone": "(845) 702-2880", "city": "Pleasant Valley", "state": "New York", "zip": "12569", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Ayana notes-needs to be moved to FN-no longer associated with Connext. Top tier tech.  Lucas- good tech but bad interpersonally; likes to add fees for anything he can think of", "range": 250, "lat": 41.75, "lng": -73.83}, {"name": "Donald L Kendrick Jr", "company": "Field Nation, LLC", "email": "dkendrickjr@live.com", "phone": "(434) 336-2043", "city": "Capron", "state": "Virginia", "zip": "23829", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Lucas - good tech, knows our systems; just in an area where we kind of have Taylor and Ashley to covereverything that isn't basically coastline", "range": 100, "lat": 36.71, "lng": -77.24}, {"name": "Kenneth Ellison", "company": "Field Nation, LLC", "email": "abctraktmedia@gmail.com", "phone": "(901) 326-8325", "city": "Palm City", "state": "Florida", "zip": "34990", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Dylan thinks Kenneth (who is also technically named Dylan, though I haven't seen him at the meetings) is a great tech. Highly recommend for any southern florida jobs", "range": 150, "lat": 27.19, "lng": -80.27}, {"name": "Jamaal Johnson", "company": "Field Nation, LLC", "email": "", "phone": "(870) 355-1853", "city": "Plattsburgh", "state": "New York", "zip": "12901", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Dylan likes Jamaal. Great and experienced tech, with good customer service skills", "range": 150, "lat": 44.69, "lng": -73.45}, {"name": "Ashley Smith", "company": "Field Nation, LLC", "email": "universal24llc@gmail.com", "phone": "(443) 506-0072", "city": "Temple Hills", "state": "Maryland", "zip": "20748", "street": "6424 Glen Oak Drive", "rating": 2, "territory": "East Coast Region", "notes": "Dylan thinks Ashley is a solid technician. He does good work, but I've had to correct his work a couple of times.", "range": 100, "lat": 38.81, "lng": -76.94}, {"name": "William Broyhill", "company": "Field Nation, LLC", "email": "broyhillitconsulting@yahoo.com", "phone": "(720) 884-7803", "city": "Anthony", "state": "Florida", "zip": "33647", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Lucas - worked with him a couple times; decent tech that knows the systems", "range": 200, "lat": 29.27, "lng": -82.12}, {"name": "Ted Glover", "company": "Field Nation, LLC", "email": "tglover5337@me.com", "phone": "(850) 240-5201", "city": "Crestview", "state": "Florida", "zip": "32539", "street": "", "rating": 3, "territory": "East Coast Region", "notes": "", "range": 75, "lat": 30.77, "lng": -86.57}, {"name": "Ismayil Novruzov", "company": "Field Nation, LLC", "email": "ismail.nyw@gmail.com", "phone": "(347) 986-7297", "city": "Westchase", "state": "Florida", "zip": "33626", "street": "", "rating": 4, "territory": "East Coast Region", "notes": "", "range": 50, "lat": 28.05, "lng": -82.59}, {"name": "Dylan Fellows", "company": "Field Nation, LLC", "email": "dylanjfellows@gmail.com", "phone": "(678) 646-1549", "city": "Grantville", "state": "Georgia", "zip": "30220", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "Personality hire - could use interpersonal coaching and sometimes needs a bit of hand-holding on sites; No notes needed - he's the best of the best. The truest Golden Boy  Ayana 2nds this-great potent", "range": 150, "lat": 33.23, "lng": -84.84}, {"name": "Vincent Loera", "company": "Field Nation, LLC", "email": "vincentloerac@gmail.com", "phone": "(678) 978-3838", "city": "Peachtree City", "state": "Georgia", "zip": "30269", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Dylan thinks Vincent is a good tech. I request photos from him and have had to ask him to clean up some work a couple of times, but you only have to correct a problem once with him and he won't do it ", "range": 100, "lat": 33.4, "lng": -84.59}, {"name": "Tora McCall", "company": "Field Nation, LLC", "email": "tora.tpcd@gmail.com", "phone": "(229) 376-5201", "city": "Albany", "state": "Georgia", "zip": "31707", "street": "", "rating": 3, "territory": "East Coast Region", "notes": "Ayana note-Tora is a solid tech. Schedule fills up and he gets a little anxious about working with schools or pressure situations.", "range": 75, "lat": 31.58, "lng": -84.16}, {"name": "Vic Maggio", "company": "Gemini Mechanical LLC", "email": "vicmaggio66@gmail.com", "phone": "(757) 784-2915", "city": "Williamsburg", "state": "Virginia", "zip": "23185", "street": "293 East Queens Drive", "rating": 2, "territory": "East Coast Region", "notes": "Vic does great work, but usually it's Eric that goes out for jobs - Dylan", "range": 40, "lat": 37.27, "lng": -76.71}, {"name": "Erik Colson", "company": "Gemini Mechanical LLC", "email": "erikcolson38@gmail.com", "phone": "(757) 810-5343", "city": "Gloucester Point", "state": "Virginia", "zip": "23062", "street": "1552 York River Drive", "rating": 3, "territory": "East Coast Region", "notes": "Eric often needs assistance, but he does get the job done. - Dylan", "range": 120, "lat": 37.27, "lng": -76.5}, {"name": "Rob Shelton", "company": "KNC Technologies", "email": "robbys@knctech.us", "phone": "(336) 575-5805", "city": "Winston-Salem", "state": "North Carolina", "zip": "27107", "street": "12845 Old U.S. Highway 52", "rating": 1, "territory": "East Coast Region", "notes": "", "range": 150, "lat": 36.1, "lng": -80.24}, {"name": "Josef Myers", "company": "Site Services Now", "email": "", "phone": "(850) 419-2373", "city": "Altoona", "state": "Pennsylvania", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Pennsylvania | Maryland", "range": 100, "lat": 40.51, "lng": -78.4}, {"name": "Hector Vasquez", "company": "Site Services Now", "email": "lawproc009@outlook.com", "phone": "(919) 609-9228", "city": "Hillsborough", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "North Carolina | Virginia | South Carolina", "range": 200, "lat": 36.07, "lng": -79.1}, {"name": "Charles Rhett Becker", "company": "Site Services Now", "email": "", "phone": "(336) 639-0622", "city": "High Point", "state": "North Carolina", "zip": "", "street": "", "rating": 1, "territory": "East Coast Region", "notes": "North Carolina | Virginia | West Virginia", "range": 150, "lat": 35.96, "lng": -80.01}, {"name": "Osee Relaford III", "company": "Site Services Now", "email": "", "phone": "(912) 996-5586", "city": "Nahunta", "state": "Georgia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 32.827487308327754, "lng": -84.06089786779295}, {"name": "James Rennard", "company": "Site Services Now", "email": "", "phone": "(904) 449-3249", "city": "Jacksonville", "state": "Florida", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Does good work, but frequent reschedules or is late to site - Autumn   \nFlorida | Georgia", "range": 100, "lat": 30.33, "lng": -81.66}, {"name": "Benjamin Sizemore", "company": "Site Services Now", "email": "", "phone": "(540) 235-7171", "city": "St. George", "state": "Virginia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "", "range": 100, "lat": 37.67507491149643, "lng": -80.25232444889909}, {"name": "Worked with him a handful of times and he's thorough when it comes to troubleshooting - Autumn", "company": "Site Services Now", "email": "", "phone": "(423) 298-1416", "city": "Nahunta", "state": "Georgia", "zip": "", "street": "", "rating": 2, "territory": "East Coast Region", "notes": "Georgia | South Carolina", "range": 100, "lat": 31.749820759685768, "lng": -83.39143153903463}, {"name": "Austin Kimball", "company": "Swiftwired Computer & Security Solutions", "email": "austin@swiftwiredcss.com", "phone": "(603) 348-0202", "city": "Franklin", "state": "New Hampshire", "zip": "3235", "street": "256 S Main St", "rating": 1, "territory": "East Coast Region", "notes": "Does great work. DGB - Dylan", "range": 150, "lat": 43.44, "lng": -71.65}, {"name": "Dain Eide", "company": "Advantage Cabling", "email": "deide@advantagecabling.com", "phone": "(602) 791-9802", "city": "Phoenix", "state": "Arizona", "zip": "85045", "street": "16412 South 18th Drive", "rating": 2, "territory": "West Coast Region", "notes": "Lucas - good kid; not a ton of experience with our systems but works with the county/district for their low voltage work and helped us out when Connext botched some visits in the area", "range": 100, "lat": 33.45, "lng": -112.07}, {"name": "Paul Bulris", "company": "Field Nation, LLC", "email": "baxterspace@gmail.com", "phone": "(229) 444-2534", "city": "Tucson", "state": "Arizona", "zip": "85705", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - Haven't worked with him that much but he is knowledgable what I found.", "range": 100, "lat": 32.22, "lng": -110.97}, {"name": "Derek Van Den Top", "company": "Field Nation, LLC", "email": "dvandentop@msn.com", "phone": "(605) 359-3672", "city": "Sioux Falls", "state": "South Dakota", "zip": "57108", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Adib - I worked with him on all types of works. Solid so far.", "range": 200, "lat": 43.55, "lng": -96.73}, {"name": "Mike Mcleod", "company": "Field Nation, LLC", "email": "mike.mcleod@x5networks.com", "phone": "(510) 846-8035", "city": "Union City", "state": "California", "zip": "94587", "street": "Union City", "rating": 1, "territory": "West Coast Region", "notes": "5 start tech of Northern CA/C7 certified/$$$", "range": 150, "lat": 37.59, "lng": -122.02}, {"name": "Matthew Cobra", "company": "Field Nation, LLC", "email": "matt@cobraspec.com", "phone": "(408) 318-5124", "city": "Valley Springs", "state": "California", "zip": "95252", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 38.19, "lng": -120.83}, {"name": "Scott Roberts", "company": "Field Nation, LLC", "email": "sroberts597@gmail.com", "phone": "(702) 969-8210", "city": "Las Vegas", "state": "Nevada", "zip": "89119", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan thinks Scott is a good tech. Technically a DGB but he is close to being downgradedl. He does great work but he often reschedules with me", "range": 100, "lat": 36.17, "lng": -115.14}, {"name": "Nick Newberry", "company": "Field Nation, LLC", "email": "kingnewby@gmail.com", "phone": "(208) 713-0759", "city": "Tecumseh", "state": "Kansas", "zip": "66542", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Scheduling can be an issue at times so may need update about procedure and good communication on eta expectation. Great work though and never an issue.", "range": 200, "lat": 39.02, "lng": -95.56}, {"name": "Ronald Rueppel", "company": "Field Nation, LLC", "email": "rueppelwork@gmail.com", "phone": "(208) 713-1321", "city": "Middleton", "state": "Idaho", "zip": "83644", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Dylan thinks he's a great tech - a proper Boise Boy and a DGB", "range": 200, "lat": 43.71, "lng": -116.62}, {"name": "Mark Grover", "company": "Field Nation, LLC", "email": "", "phone": "(612) 206-1292", "city": "Rexburg", "state": "Idaho", "zip": "83440", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Have done some new installs and break fixes. Moves a little slow, but good quality.", "range": 100, "lat": 43.83, "lng": -111.79}, {"name": "Brian Field", "company": "Field Nation, LLC", "email": "bombguy64@hotmail.com", "phone": "(808) 348-4560", "city": "Waianae", "state": "Hawaii", "zip": "96792", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 21.44, "lng": -158.18}, {"name": "Noel Francis", "company": "Field Nation, LLC", "email": "noel2usa@msn.com", "phone": "(716) 228-2541", "city": "Anchorage", "state": "Alaska", "zip": "99524", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I worked with him on multiple AK schools. Very very slow to get response from him but he does a good job.", "range": 100, "lat": 61.22, "lng": -149.9}, {"name": "Markus Paminger", "company": "Field Nation, LLC", "email": "markuspaminger@gmail.com", "phone": "(914) 393-5073", "city": "Missoula", "state": "Montana", "zip": "59802", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Schedule fills up, but does great work on break fix/installs.", "range": 100, "lat": 46.87, "lng": -114.01}, {"name": "Matthew Ramos", "company": "Field Nation, LLC", "email": "m-ramos33@live.com", "phone": "928-241-2542", "city": "Mesquite", "state": "Nevada", "zip": "89027", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan liked working with Matthew, but he's in the middle of nowhere.", "range": 100, "lat": 36.8, "lng": -114.07}, {"name": "Michael Senoran", "company": "Field Nation, LLC", "email": "mykulpc@gmail.com", "phone": "661-865-6505", "city": "Bakersfield", "state": "California", "zip": "93306", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Dylan thought he did a fine job. He's a bit weird, but we don't pay them for their personalities", "range": 100, "lat": 35.37, "lng": -119.02}, {"name": "John Nygaard", "company": "Field Nation, LLC, Solen High School", "email": "ndnygaard@yahoo.com", "phone": "(701) 595-3016", "city": "Bismarck", "state": "North Dakota", "zip": "58501", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "lucas - man is scared to climb ladders, okay for VPU troubleshooting and really simple stuff", "range": 200, "lat": 46.81, "lng": -100.78}, {"name": "Trevor Green", "company": "Green Real Estate Inspections", "email": "", "phone": "(949) 610-3100", "city": "Newport Beach", "state": "California", "zip": "92660", "street": "2618 San Miguel Drive Suite 518", "rating": 1, "territory": "West Coast Region", "notes": "5 start tech of South CA/Break fix rate is about $500", "range": 150, "lat": 33.62, "lng": -117.93}, {"name": "Neil Hurd", "company": "HEI INC", "email": "nhurd@heinm.com", "phone": "(505) 710-7226", "city": "Rio Rancho", "state": "New Mexico", "zip": "87124", "street": "500 Laser Rd NE", "rating": 1, "territory": "West Coast Region", "notes": "Neil's team is fantastic. Services all of NM, but is based out of Albuquerque. DGBs for sure - Dylan", "range": 150, "lat": 35.23, "lng": -106.69}, {"name": "Barry Casey", "company": "Montra Solutions", "email": "net.works.dispatch@gmail.com", "phone": "(425) 287-8781", "city": "", "state": "Washington", "zip": "98026", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 120, "lat": 46.64245755149418, "lng": -120.98185975890136}, {"name": "Ronald Rueppel", "company": "Montra Solutions", "email": "", "phone": "(208) 713-1321", "city": "", "state": "Idaho", "zip": "83644", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Lucas - confirm this with Ayana but I think this is is the tech that worked for Montra but would decline jobs from Yancey and then wait for us to hit him up on FN to get a better rate", "range": 200, "lat": 44.23981510044724, "lng": -114.62809363103486}, {"name": "Justin Foresman", "company": "Montra Solutions", "email": "libertyservce333@gmail.com", "phone": "(360) 932-7579", "city": "", "state": "Washington", "zip": "98674", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Reliable Yancey tech. -Brandon", "range": 200, "lat": 46.952704995265115, "lng": -120.35717490579854}, {"name": "Bob Ritterodt", "company": "Rapelje High School", "email": "bobritterodt@yahoo.com", "phone": "(406) 321-2154", "city": "Rapelje", "state": "Montana", "zip": "59067", "street": "714 Main Street", "rating": 2, "territory": "West Coast Region", "notes": "Good technician. Best as a backup - Dylan", "range": 100, "lat": 45.96, "lng": -109.57}, {"name": "Eric du Toit", "company": "Salt Creek Integrated", "email": "eric@saltcreekintegrated.com", "phone": "(719) 641-5727", "city": "Colorado Springs", "state": "Colorado", "zip": "80907", "street": "1295 Hans Brinker Lane", "rating": 1, "territory": "West Coast Region", "notes": "Eric's team does great work - Dylan", "range": 150, "lat": 38.83, "lng": -104.82}, {"name": "Matt Harcey", "company": "Site Services Now", "email": "matthew@ultimateprintsolutions.com", "phone": "(602) 703-1937", "city": "Avondale", "state": "Arizona", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Adib - He is a solid tech.", "range": 150, "lat": 34.49508873068452, "lng": -111.8896019845151}, {"name": "Ali Khanafer", "company": "Site Services Now", "email": "", "phone": "(323) 439-8415", "city": "La Puente", "state": "California", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I did couple of troubleshooting and OCR install. So far so good.", "range": 100, "lat": 37.189310802932496, "lng": -119.38297696801884}, {"name": "Jobani Valdez", "company": "Site Services Now", "email": "", "phone": "(323) 206-0064", "city": "Riverside", "state": "California", "zip": "", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "Adib - He had issue climbing ladder which I was able to do that with Trevor using ladder. Other than that, does his job.", "range": 75, "lat": 33.98, "lng": -117.37}, {"name": "Rudy Aldama", "company": "Site Services Now", "email": "", "phone": "(916) 803-3686", "city": "Sebastopol", "state": "California", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - Good tech and does effective job on swapping and troubleshooting\nCalifornia | Nevada", "range": 100, "lat": 36.44440082642879, "lng": -120.25123280030115}, {"name": "Steven Rocha", "company": "Site Services Now", "email": "", "phone": "(209) 765-5904", "city": "Sutter Creek", "state": "California", "zip": "", "street": "", "rating": 3, "territory": "West Coast Region", "notes": "Adib - He does great job on troubleshooting and swap but I had issues with him on running new line for OCR install.", "range": 75, "lat": 37.43154091553085, "lng": -119.9614487278198}, {"name": "EJ Senteney-Shparago", "company": "Site Services Now", "email": "", "phone": "(971) 701-5433", "city": "Spokane", "state": "Washington", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Reliable tech that goes above and beyond-Brandon \n-Washington | Oregon", "range": 150, "lat": 47.66, "lng": -117.43}, {"name": "Josh Weickum", "company": "Site Services Now", "email": "joshweickum@gmail.com", "phone": "(307) 262-8083", "city": "Gillette", "state": "Wyoming", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - He is very good at his job.", "range": 100, "lat": 44.29, "lng": -105.5}, {"name": "Ricky Emery", "company": "Site Services Now", "email": "", "phone": "(702) 677-5440", "city": "Las Vegas", "state": "Nevada", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Adib - I worked with him on NV state, knows his work.", "range": 100, "lat": 36.17, "lng": -115.14}, {"name": "Mark de Amici", "company": "Site Services Now", "email": "markd@datalineltd.net", "phone": "(801) 510-8145", "city": "Evanston", "state": "Wyoming", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Wyoming | Utah | Idaho", "range": 100, "lat": 41.27, "lng": -110.96}, {"name": "Michael Amici", "company": "Site Services Now", "email": "", "phone": "(505) 204-2382", "city": "USAF Academy", "state": "Colorado", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 38.348393349408234, "lng": -106.14525379706646}, {"name": "Evan Moses", "company": "Site Services Now", "email": "", "phone": "(425) 577-4584", "city": "Gig Harbor", "state": "Washington", "zip": "", "street": "", "rating": 1, "territory": "West Coast Region", "notes": "Great tech that always puts in great work -Brandon", "range": 150, "lat": 47.33, "lng": -122.58}, {"name": "Colter Zimmerman", "company": "Site Services Now", "email": "", "phone": "(406) 381-7356", "city": "Alberton", "state": "Montana", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 47.45599098615593, "lng": -110.23403834981298}, {"name": "Kyle Halter", "company": "Site Services Now", "email": "m1racer@msn.com", "phone": "(406) 580-0355", "city": "Belgrade", "state": "Montana", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "", "range": 100, "lat": 47.391405237239006, "lng": -110.0324291412899}, {"name": "Nicholas Thomas Zelinka", "company": "Site Services Now", "email": "", "phone": "(762) 226-0262", "city": "Basalt", "state": "Colorado", "zip": "", "street": "", "rating": 2, "territory": "West Coast Region", "notes": "Colorado | Kansas", "range": 100, "lat": 39.05796494632752, "lng": -104.74301477763301}, {"name": "Claire Catignani", "company": "Clearline Networks", "email": "claire@clearline.net", "phone": "(615) 939-5113", "city": "", "state": "Tennessee", "zip": "", "street": "", "rating": 2, "territory": "", "notes": "", "range": 100, "lat": 35.705655003533366, "lng": -86.61673498996284}, {"name": "Bryson Fuller", "company": "Fuller's Structured Cabling", "email": "fsclubbock@gmail.com", "phone": "(806) 470-9256", "city": "Lubbock", "state": "Texas", "zip": "", "street": "", "rating": 1, "territory": "", "notes": "Bryson is a solid technician. Use him for anythng around Lubbock/Midlands. DGB - Dylan", "range": 150, "lat": 33.58, "lng": -101.86}, {"name": "Chance Reuppel", "company": "Timeless Tech Services LLC", "email": "timelesstechservicesllc@gmail.com", "phone": "(208) 807-7184", "city": "Birmingham", "state": "Alabama", "zip": "", "street": "", "rating": 1, "territory": "", "notes": "Great technician, but he really only services around Steven's territory in AL. - Dylan", "range": 150, "lat": 33.52, "lng": -86.8}];
 const RATING_LABEL = {1:'1 – Top Technician',2:'2 – Good',3:'3 – Needs Support',4:'4 – Struggling'};
 const RATING_CLASS = {1:'r1',2:'r2',3:'r3',4:'r4'};
 const RATING_COLOR = {1:{bg:'#1a4a8a',bd:'#63b3ed',tx:'#90cdf4'},2:{bg:'#1a5c38',bd:'#48bb78',tx:'#68d391'},3:{bg:'#8a5a00',bd:'#ed8936',tx:'#f6ad55'},4:{bg:'#8a2020',bd:'#fc8181',tx:'#fed7d7'}};
@@ -418,7 +433,15 @@ const STATE_CENTERS = {'Alabama':[32.8,-86.8],'Alaska':[64.2,-153.4],'Arizona':[
 const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 
 const map = L.map('map',{center:[38.5,-96],zoom:4});
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+  maxZoom: 16
+}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '',
+  maxZoom: 16
+}).addTo(map);
+map.whenReady(function(){ setTimeout(function(){ map.invalidateSize(); }, 100); });
 
 const markerLayer = L.layerGroup().addTo(map);
 const proxLayer = L.layerGroup().addTo(map);
@@ -892,57 +915,38 @@ const STATE_CENTROIDS = {
   'Wisconsin':[44.3,-89.6],'Wyoming':[42.8,-107.3]
 };
 
-let vendorMode = 0;
 
 function cycleVendorMode() {
-  vendorMode = (vendorMode + 1) % 3;
+  showVendors = !showVendors;
   const btn = document.getElementById('btn-vendors');
-  const indicator = document.getElementById('vendor-mode-indicator');
   const vendorBar = document.getElementById('vendor-bar');
-  if (vendorMode === 0) {
-    btn.classList.remove('on');
-    btn.innerHTML = '&#127970; Vendors';
-    showVendors = false; onlyVendors = false;
-    indicator.style.display = 'none';
-    vendorBar.style.display = 'none';
-    vendorLayer.clearLayers();
-    applyFilters();
-  } else if (vendorMode === 1) {
+  const tlBar = document.getElementById('tl-bar');
+  const indicator = document.getElementById('vendor-mode-indicator');
+  if (showVendors) {
     btn.classList.add('on');
     btn.innerHTML = '&#127970; Vendors &#10003;';
-    showVendors = true; onlyVendors = false;
-    indicator.style.display = 'none';
-    vendorBar.style.display = 'flex';
-    applyFilters();
-    renderVendors();
-  } else {
-    btn.classList.add('on');
-    btn.innerHTML = '&#127970; Only &#9646;&#9646;';
-    showVendors = true; onlyVendors = true;
+    onlyVendors = true;
     indicator.style.display = 'block';
     vendorBar.style.display = 'flex';
     markerLayer.clearLayers();
     radiusLayer.clearLayers();
     renderVendors();
+  } else {
+    btn.classList.remove('on');
+    btn.innerHTML = '&#127970; Vendors';
+    onlyVendors = false;
+    showTechlink = false;
+    indicator.style.display = 'none';
+    vendorBar.style.display = 'none';
+    tlBar.style.display = 'none';
+    vendorLayer.clearLayers();
+    tlLayer.clearLayers();
+    applyFilters();
   }
 }
 
 function drawVendorCoverage(v) {
-  if (!v.states || !v.states.length) return;
-  const c = VENDOR_COVERAGE_COLORS[v.name] || {color:'#b794f4'};
-  v.states.forEach(state => {
-    const coords = STATE_CENTROIDS[state];
-    if (!coords) return;
-    L.circle(coords, {
-      radius: 165000,
-      color: c.color,
-      fillColor: c.color,
-      fillOpacity: 0.18,
-      weight: 2.5,
-      dashArray: '8,4',
-      interactive: false
-    }).addTo(vendorLayer);
-  });
+  // Circles removed - using pins only
 }
 
 function renderVendors() {
@@ -965,432 +969,216 @@ function renderVendors() {
 
 
 
+
+const ALL_VENDOR_METROS = {"Site Services Now": [{"city": "Birmingham", "state": "Alabama", "lat": 33.52, "lng": -86.8}, {"city": "Anchorage", "state": "Alaska", "lat": 61.22, "lng": -149.9}, {"city": "Phoenix", "state": "Arizona", "lat": 33.45, "lng": -112.07}, {"city": "Little Rock", "state": "Arkansas", "lat": 34.75, "lng": -92.29}, {"city": "Los Angeles", "state": "California", "lat": 34.05, "lng": -118.24}, {"city": "Denver", "state": "Colorado", "lat": 39.74, "lng": -104.98}, {"city": "Wilmington", "state": "Delaware", "lat": 39.74, "lng": -75.55}, {"city": "Miami", "state": "Florida", "lat": 25.77, "lng": -80.19}, {"city": "Atlanta", "state": "Georgia", "lat": 33.75, "lng": -84.39}, {"city": "Boise", "state": "Idaho", "lat": 43.62, "lng": -116.2}, {"city": "Chicago", "state": "Illinois", "lat": 41.88, "lng": -87.63}, {"city": "Indianapolis", "state": "Indiana", "lat": 39.77, "lng": -86.16}, {"city": "Des Moines", "state": "Iowa", "lat": 41.6, "lng": -93.62}, {"city": "Wichita", "state": "Kansas", "lat": 37.69, "lng": -97.34}, {"city": "Louisville", "state": "Kentucky", "lat": 38.25, "lng": -85.76}, {"city": "New Orleans", "state": "Louisiana", "lat": 29.95, "lng": -90.07}, {"city": "Baltimore", "state": "Maryland", "lat": 39.29, "lng": -76.61}, {"city": "Boston", "state": "Massachusetts", "lat": 42.36, "lng": -71.06}, {"city": "Detroit", "state": "Michigan", "lat": 42.33, "lng": -83.05}, {"city": "Minneapolis", "state": "Minnesota", "lat": 44.98, "lng": -93.27}, {"city": "Jackson", "state": "Mississippi", "lat": 32.3, "lng": -90.18}, {"city": "Kansas City", "state": "Missouri", "lat": 39.1, "lng": -94.58}, {"city": "Billings", "state": "Montana", "lat": 45.78, "lng": -108.5}, {"city": "Omaha", "state": "Nebraska", "lat": 41.26, "lng": -95.94}, {"city": "Las Vegas", "state": "Nevada", "lat": 36.17, "lng": -115.14}, {"city": "Newark", "state": "New Jersey", "lat": 40.74, "lng": -74.17}, {"city": "Albuquerque", "state": "New Mexico", "lat": 35.08, "lng": -106.65}, {"city": "New York", "state": "New York", "lat": 40.71, "lng": -74.0}, {"city": "Charlotte", "state": "North Carolina", "lat": 35.23, "lng": -80.84}, {"city": "Fargo", "state": "North Dakota", "lat": 46.88, "lng": -96.79}, {"city": "Columbus", "state": "Ohio", "lat": 39.96, "lng": -82.99}, {"city": "Oklahoma City", "state": "Oklahoma", "lat": 35.47, "lng": -97.52}, {"city": "Portland", "state": "Oregon", "lat": 45.52, "lng": -122.68}, {"city": "Philadelphia", "state": "Pennsylvania", "lat": 39.95, "lng": -75.17}, {"city": "Providence", "state": "Rhode Island", "lat": 41.82, "lng": -71.42}, {"city": "Columbia", "state": "South Carolina", "lat": 34.0, "lng": -81.03}, {"city": "Sioux Falls", "state": "South Dakota", "lat": 43.55, "lng": -96.73}, {"city": "Nashville", "state": "Tennessee", "lat": 36.17, "lng": -86.78}, {"city": "Dallas", "state": "Texas", "lat": 32.78, "lng": -96.8}, {"city": "Salt Lake City", "state": "Utah", "lat": 40.76, "lng": -111.89}, {"city": "Burlington", "state": "Vermont", "lat": 44.48, "lng": -73.21}, {"city": "Richmond", "state": "Virginia", "lat": 37.54, "lng": -77.44}, {"city": "Seattle", "state": "Washington", "lat": 47.61, "lng": -122.33}, {"city": "Charleston", "state": "West Virginia", "lat": 38.35, "lng": -81.63}, {"city": "Milwaukee", "state": "Wisconsin", "lat": 43.04, "lng": -87.91}, {"city": "Cheyenne", "state": "Wyoming", "lat": 41.14, "lng": -104.82}], "Connext": [{"city": "Hartford", "state": "Connecticut", "lat": 41.76, "lng": -72.68}, {"city": "Miami", "state": "Florida", "lat": 25.77, "lng": -80.19}, {"city": "Atlanta", "state": "Georgia", "lat": 33.75, "lng": -84.39}, {"city": "Chicago", "state": "Illinois", "lat": 41.88, "lng": -87.63}, {"city": "Des Moines", "state": "Iowa", "lat": 41.6, "lng": -93.62}, {"city": "Louisville", "state": "Kentucky", "lat": 38.25, "lng": -85.76}, {"city": "New Orleans", "state": "Louisiana", "lat": 29.95, "lng": -90.07}, {"city": "Portland", "state": "Maine", "lat": 43.66, "lng": -70.26}, {"city": "Boston", "state": "Massachusetts", "lat": 42.36, "lng": -71.06}, {"city": "Detroit", "state": "Michigan", "lat": 42.33, "lng": -83.05}, {"city": "Minneapolis", "state": "Minnesota", "lat": 44.98, "lng": -93.27}, {"city": "Jackson", "state": "Mississippi", "lat": 32.3, "lng": -90.18}, {"city": "Manchester", "state": "New Hampshire", "lat": 42.99, "lng": -71.46}, {"city": "Newark", "state": "New Jersey", "lat": 40.74, "lng": -74.17}, {"city": "Albuquerque", "state": "New Mexico", "lat": 35.08, "lng": -106.65}, {"city": "New York", "state": "New York", "lat": 40.71, "lng": -74.0}, {"city": "Charlotte", "state": "North Carolina", "lat": 35.23, "lng": -80.84}, {"city": "Oklahoma City", "state": "Oklahoma", "lat": 35.47, "lng": -97.52}, {"city": "Philadelphia", "state": "Pennsylvania", "lat": 39.95, "lng": -75.17}, {"city": "Providence", "state": "Rhode Island", "lat": 41.82, "lng": -71.42}, {"city": "Dallas", "state": "Texas", "lat": 32.78, "lng": -96.8}, {"city": "Burlington", "state": "Vermont", "lat": 44.48, "lng": -73.21}, {"city": "Richmond", "state": "Virginia", "lat": 37.54, "lng": -77.44}], "Techlink Services LLC": [{"city": "Atlanta", "state": "Georgia", "lat": 33.75, "lng": -84.39, "density": "Very High"}, {"city": "Charlotte", "state": "North Carolina", "lat": 35.23, "lng": -80.84, "density": "Very High"}, {"city": "Raleigh", "state": "North Carolina", "lat": 35.78, "lng": -78.64, "density": "Very High"}, {"city": "Richmond", "state": "Virginia", "lat": 37.54, "lng": -77.44, "density": "Very High"}, {"city": "Washington DC", "state": "Maryland", "lat": 38.91, "lng": -77.04, "density": "Very High"}, {"city": "Nashville", "state": "Tennessee", "lat": 36.17, "lng": -86.78, "density": "High"}, {"city": "Birmingham", "state": "Alabama", "lat": 33.52, "lng": -86.8, "density": "High"}, {"city": "Memphis", "state": "Tennessee", "lat": 35.15, "lng": -90.05, "density": "High"}, {"city": "Louisville", "state": "Kentucky", "lat": 38.25, "lng": -85.76, "density": "High"}, {"city": "Columbia", "state": "South Carolina", "lat": 34.0, "lng": -81.03, "density": "High"}, {"city": "Greenville", "state": "South Carolina", "lat": 34.85, "lng": -82.39, "density": "Medium"}, {"city": "Knoxville", "state": "Tennessee", "lat": 35.96, "lng": -83.92, "density": "Medium"}, {"city": "Miami", "state": "Florida", "lat": 25.77, "lng": -80.19, "density": "Very High"}, {"city": "Orlando", "state": "Florida", "lat": 28.54, "lng": -81.38, "density": "Very High"}, {"city": "Tampa", "state": "Florida", "lat": 27.95, "lng": -82.46, "density": "Very High"}, {"city": "Jacksonville", "state": "Florida", "lat": 30.33, "lng": -81.66, "density": "High"}, {"city": "Fort Lauderdale", "state": "Florida", "lat": 26.12, "lng": -80.14, "density": "High"}, {"city": "Tallahassee", "state": "Florida", "lat": 30.44, "lng": -84.28, "density": "Medium"}, {"city": "Philadelphia", "state": "Pennsylvania", "lat": 39.95, "lng": -75.17, "density": "Very High"}, {"city": "New York", "state": "New York", "lat": 40.71, "lng": -74.0, "density": "Very High"}, {"city": "Baltimore", "state": "Maryland", "lat": 39.29, "lng": -76.61, "density": "Very High"}, {"city": "Pittsburgh", "state": "Pennsylvania", "lat": 40.44, "lng": -79.99, "density": "High"}, {"city": "Boston", "state": "Massachusetts", "lat": 42.36, "lng": -71.06, "density": "High"}, {"city": "Providence", "state": "Rhode Island", "lat": 41.82, "lng": -71.42, "density": "Medium"}, {"city": "Hartford", "state": "Connecticut", "lat": 41.76, "lng": -72.68, "density": "Medium"}, {"city": "Buffalo", "state": "New York", "lat": 42.89, "lng": -78.88, "density": "Medium"}, {"city": "Chicago", "state": "Illinois", "lat": 41.88, "lng": -87.63, "density": "Very High"}, {"city": "Detroit", "state": "Michigan", "lat": 42.33, "lng": -83.05, "density": "Very High"}, {"city": "Columbus", "state": "Ohio", "lat": 39.96, "lng": -82.99, "density": "High"}, {"city": "Cleveland", "state": "Ohio", "lat": 41.5, "lng": -81.69, "density": "High"}, {"city": "Cincinnati", "state": "Ohio", "lat": 39.1, "lng": -84.51, "density": "High"}, {"city": "Indianapolis", "state": "Indiana", "lat": 39.77, "lng": -86.16, "density": "High"}, {"city": "Milwaukee", "state": "Wisconsin", "lat": 43.04, "lng": -87.91, "density": "High"}, {"city": "Minneapolis", "state": "Minnesota", "lat": 44.98, "lng": -93.27, "density": "Medium"}, {"city": "St. Louis", "state": "Missouri", "lat": 38.63, "lng": -90.2, "density": "Medium"}, {"city": "Kansas City", "state": "Missouri", "lat": 39.1, "lng": -94.58, "density": "Medium"}, {"city": "Dallas", "state": "Texas", "lat": 32.78, "lng": -96.8, "density": "Very High"}, {"city": "Houston", "state": "Texas", "lat": 29.76, "lng": -95.37, "density": "Very High"}, {"city": "San Antonio", "state": "Texas", "lat": 29.42, "lng": -98.49, "density": "High"}, {"city": "Austin", "state": "Texas", "lat": 30.27, "lng": -97.74, "density": "High"}, {"city": "El Paso", "state": "Texas", "lat": 31.76, "lng": -106.49, "density": "Medium"}, {"city": "Lubbock", "state": "Texas", "lat": 33.58, "lng": -101.86, "density": "Medium"}, {"city": "New Orleans", "state": "Louisiana", "lat": 29.95, "lng": -90.07, "density": "High"}, {"city": "Oklahoma City", "state": "Oklahoma", "lat": 35.47, "lng": -97.52, "density": "Medium"}, {"city": "Little Rock", "state": "Arkansas", "lat": 34.75, "lng": -92.29, "density": "Medium"}, {"city": "Jackson", "state": "Mississippi", "lat": 32.3, "lng": -90.18, "density": "Medium"}, {"city": "Los Angeles", "state": "California", "lat": 34.05, "lng": -118.24, "density": "Very High"}, {"city": "San Francisco", "state": "California", "lat": 37.77, "lng": -122.42, "density": "Very High"}, {"city": "San Diego", "state": "California", "lat": 32.72, "lng": -117.16, "density": "Very High"}, {"city": "Seattle", "state": "Washington", "lat": 47.61, "lng": -122.33, "density": "Very High"}, {"city": "Sacramento", "state": "California", "lat": 38.58, "lng": -121.49, "density": "High"}, {"city": "Portland", "state": "Oregon", "lat": 45.52, "lng": -122.68, "density": "High"}, {"city": "Fresno", "state": "California", "lat": 36.74, "lng": -119.77, "density": "Medium"}, {"city": "Spokane", "state": "Washington", "lat": 47.66, "lng": -117.43, "density": "Medium"}, {"city": "Phoenix", "state": "Arizona", "lat": 33.45, "lng": -112.07, "density": "Very High"}, {"city": "Las Vegas", "state": "Nevada", "lat": 36.17, "lng": -115.14, "density": "High"}, {"city": "Denver", "state": "Colorado", "lat": 39.74, "lng": -104.98, "density": "High"}, {"city": "Tucson", "state": "Arizona", "lat": 32.22, "lng": -110.97, "density": "Medium"}, {"city": "Albuquerque", "state": "New Mexico", "lat": 35.08, "lng": -106.65, "density": "Medium"}, {"city": "Salt Lake City", "state": "Utah", "lat": 40.76, "lng": -111.89, "density": "Medium"}, {"city": "Omaha", "state": "Nebraska", "lat": 41.26, "lng": -95.94, "density": "Low"}, {"city": "Wichita", "state": "Kansas", "lat": 37.69, "lng": -97.34, "density": "Low"}, {"city": "Fargo", "state": "North Dakota", "lat": 46.88, "lng": -96.79, "density": "Low"}, {"city": "Sioux Falls", "state": "South Dakota", "lat": 43.55, "lng": -96.73, "density": "Low"}, {"city": "Boise", "state": "Idaho", "lat": 43.62, "lng": -116.2, "density": "Low"}, {"city": "Billings", "state": "Montana", "lat": 45.78, "lng": -108.5, "density": "Low"}, {"city": "Cheyenne", "state": "Wyoming", "lat": 41.14, "lng": -104.82, "density": "Low"}, {"city": "Anchorage", "state": "Alaska", "lat": 61.22, "lng": -149.9, "density": "Low"}, {"city": "Honolulu", "state": "Hawaii", "lat": 21.31, "lng": -157.86, "density": "Low"}], "Veteranson Low Voltage": [{"city": "Phoenix", "state": "Arizona", "lat": 33.45, "lng": -112.07}, {"city": "Indianapolis", "state": "Indiana", "lat": 39.77, "lng": -86.16}, {"city": "New Orleans", "state": "Louisiana", "lat": 29.95, "lng": -90.07}, {"city": "Jackson", "state": "Mississippi", "lat": 32.3, "lng": -90.18}, {"city": "Dallas", "state": "Texas", "lat": 32.78, "lng": -96.8}], "Montra Solutions": [{"city": "Portland", "state": "Oregon", "lat": 45.52, "lng": -122.68}, {"city": "Sioux Falls", "state": "South Dakota", "lat": 43.55, "lng": -96.73}, {"city": "Seattle", "state": "Washington", "lat": 47.61, "lng": -122.33}], "Progressive Technologies Inc": [], "VGI Technology": [{"city": "Dallas", "state": "Texas", "lat": 32.78, "lng": -96.8}, {"city": "Houston", "state": "Texas", "lat": 29.76, "lng": -95.37}, {"city": "San Antonio", "state": "Texas", "lat": 29.42, "lng": -98.49}, {"city": "Austin", "state": "Texas", "lat": 30.27, "lng": -97.74}]};
+const VENDOR_METRO_COLORS = {"Site Services Now": "#00e676", "Connext": "#2196f3", "Techlink Services LLC": "#ff9800", "Progressive Technologies Inc": "#f44336", "Veteranson Low Voltage": "#ce93d8", "VGI Technology": "#ffeb3b", "Montra Solutions": "#4db6ac"};
+const tlLayer = L.layerGroup().addTo(map);
+let showTechlink = false;
+let activeVendorMetros = 'all'; // 'all' or vendor name
+
+function makeVendorMetroIcon(density, color) {
+  const sizeMap  = {'Very High':32, 'High':26, 'Medium':22, 'Low':16};
+  const opacMap  = {'Very High':1.0,'High':0.70,'Medium':0.42,'Low':0.22};
+  const sz  = sizeMap[density]  || 22;
+  const op  = opacMap[density]  || 0.42;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${sz+10}" viewBox="0 0 ${sz} ${sz+10}">
+    <ellipse cx="${sz/2}" cy="${sz+8}" rx="${sz*0.4}" ry="3" fill="rgba(0,0,0,${(op*0.4).toFixed(2)})"/>
+    <path d="M${sz/2} 1C${sz/2-sz*0.44} 1 1 ${1+sz*0.44} 1 ${sz/2+1}c0 ${sz*0.6} ${sz/2-1} ${sz} ${sz/2-1} ${sz}s${sz/2-1}-${sz*0.4} ${sz/2-1}-${sz}C${sz-1} ${1+sz*0.44} ${sz/2+sz*0.44} 1 ${sz/2} 1z"
+      fill="${color}" fill-opacity="${op}" stroke="rgba(255,255,255,${(op*0.8).toFixed(2)})" stroke-width="1.5"/>
+    <circle cx="${sz/2}" cy="${sz/2+1}" r="${sz*0.22}" fill="rgba(255,255,255,${(op*0.35).toFixed(2)})"/>
+  </svg>`;
+  return L.divIcon({html:svg, iconSize:[sz,sz+10], iconAnchor:[sz/2,sz+10], popupAnchor:[0,-(sz+12)], className:''});
+}
+
+function setVendorMetro(name) {
+  activeVendorMetros = name;
+  document.querySelectorAll('.vm-btn').forEach(b => b.classList.remove('on'));
+  const idMap = {
+    'all':'vm-all','Site Services Now':'vm-ssn','Connext':'vm-connext',
+    'Techlink Services LLC':'vm-techlink','Progressive Technologies Inc':'vm-prog',
+    'Veteranson Low Voltage':'vm-vet','VGI Technology':'vm-vgi','Montra Solutions':'vm-montra'
+  };
+  const el = document.getElementById(idMap[name]);
+  if(el) el.classList.add('on');
+  renderTechlink();
+  const vendors = name === 'all' ? Object.keys(ALL_VENDOR_METROS) : [name];
+  const total = vendors.reduce((s,v) => s + (ALL_VENDOR_METROS[v]||[]).length, 0);
+  document.getElementById('vm-count').textContent = total + ' metro pins shown';
+}
+
+function renderTechlink() {
+  tlLayer.clearLayers();
+  if (!showTechlink) return;
+  const vendors = activeVendorMetros === 'all'
+    ? Object.keys(ALL_VENDOR_METROS)
+    : [activeVendorMetros];
+  vendors.forEach(vendorName => {
+    const metros = ALL_VENDOR_METROS[vendorName] || [];
+    const color = VENDOR_METRO_COLORS[vendorName] || '#f6ad55';
+    const isTechlink = vendorName === 'Techlink Services LLC';
+    metros.forEach(m => {
+      const density = m.density || 'Medium';
+      const icon = makeVendorMetroIcon(density, color);
+      const popup = isTechlink
+        ? `<div style="font-size:13px;font-weight:700;color:#f7fafc;margin-bottom:3px">
+            <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle"></span>
+            Techlink Services LLC
+          </div>
+          <div style="font-size:12px;color:#a0aec0;margin-bottom:4px">&#128205; ${m.city}, ${m.state}</div>
+          <div style="font-size:11px;background:#1a1f2e;border-radius:5px;padding:4px 8px;margin-bottom:4px">
+            <span style="color:${color};font-weight:700">${density}</span> <span style="color:#718096">tech density</span>
+          </div>
+          <div style="font-size:11px;color:#718096;line-height:1.5">Based on Techlink heat map image.<br>Approximate — not an individual tech.</div>`
+        : `<div style="font-size:13px;font-weight:700;color:#f7fafc;margin-bottom:3px">
+            <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle"></span>
+            ${vendorName}
+          </div>
+          <div style="font-size:12px;color:#a0aec0;margin-bottom:5px">&#128205; ${m.city}, ${m.state}</div>
+          <div style="font-size:11px;color:#718096;line-height:1.5">Coverage based on work order history.</div>`;
+      const zIndex = isTechlink ? 200 : 50;
+      L.marker([m.lat, m.lng], {icon, zIndexOffset: zIndex})
+        .bindPopup(popup, {maxWidth: 260})
+        .addTo(tlLayer);
+    });
+  });
+}
+
+
 buildMarkers();
 updatePendingBadge();
-</script>
-
-<!-- Help Modal -->
-<div id="help-overlay" onclick="if(event.target===this)closeHelp()">
-  <div id="help-box">
-    <div id="help-header">
-      <div>
-        <h2>&#128205; How to Use the Tech Network Map</h2>
-        <div class="ver">v2.0 &middot; Third-Party Tech Network</div>
-      </div>
-      <button onclick="closeHelp()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer;padding:2px 8px;border-radius:4px">&#10005;</button>
-    </div>
-    <div class="help-tabs" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-      <div class="help-tab active" onclick="switchTab('overview')">&#127760; Overview</div>
-      <div class="help-tab" onclick="switchTab('pins')">&#128205; Pins & Ratings</div>
-      <div class="help-tab" onclick="switchTab('search')">&#128269; Search & Filter</div>
-      <div class="help-tab" onclick="switchTab('nearest')">&#128664; Find Nearest</div>
-      <div class="help-tab" onclick="switchTab('radius')">&#9711; Radius & Gaps</div>
-      <div class="help-tab" onclick="switchTab('manage')">&#128203; Manage Techs</div>
-    </div>
-    <div id="help-body">
-
-      <!-- OVERVIEW -->
-      <div class="help-section active" id="tab-overview">
-        <div class="help-card">
-          <h4>&#127919; What this map is for</h4>
-          <p>This is your live directory of all active third-party technicians across the US. Use it to find the right tech for any job, check coverage in any area, estimate travel costs, and keep tech contact info up to date — all in one place.</p>
-        </div>
-        <div class="help-card">
-          <h4>&#9881; Quick Start</h4>
-          <div class="step"><div class="step-num">1</div><p><strong>Browse the map</strong> — pins are color-coded by Internal Rating. Click any pin to see contact info.</p></div>
-          <div class="step"><div class="step-num">2</div><p><strong>Find the nearest tech</strong> — type a city or ZIP in the "Find Nearest Techs" bar and hit Find Nearest.</p></div>
-          <div class="step"><div class="step-num">3</div><p><strong>Filter your view</strong> — use the rating buttons and territory dropdown to narrow the list.</p></div>
-          <div class="step"><div class="step-num">4</div><p><strong>Check coverage gaps</strong> — click ⚠ Gap Analysis to see which states need techs.</p></div>
-          <div class="step"><div class="step-num">5</div><p><strong>Update tech info</strong> — click any pin and use "Suggest an Edit" to submit changes for review.</p></div>
-        </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> This map requires an internet connection to load the map tiles. All tech data is embedded and available offline.</div>
-      </div>
-
-      <!-- PINS & RATINGS -->
-      <div class="help-section" id="tab-pins">
-        <div class="help-card">
-          <h4>&#128205; Understanding the Pins</h4>
-          <p>Each pin represents one active technician. The number inside the pin is their Internal Rating. Click any pin to open their full contact card.</p>
-        </div>
-        <div class="help-card">
-          <h4>&#11088; Internal Rating System</h4>
-          <div class="rating-row"><div class="rating-dot" style="background:#185FA5"></div><p><strong style="color:#90cdf4">1 – Top Technician</strong> &mdash; Highest confidence. Go-to for critical or complex jobs. Dispatch first.</p></div>
-          <div class="rating-row"><div class="rating-dot" style="background:#1D9E75"></div><p><strong style="color:#68d391">2 – Good</strong> &mdash; Solid and reliable. Handles most work well with standard oversight.</p></div>
-          <div class="rating-row"><div class="rating-dot" style="background:#BA7517"></div><p><strong style="color:#f6ad55">3 – Needs Support</strong> &mdash; Can get the job done but may need guidance. Use as backup.</p></div>
-          <div class="rating-row"><div class="rating-dot" style="background:#E24B4A"></div><p><strong style="color:#fc8181">4 – Struggling</strong> &mdash; Use with caution. Monitor closely or avoid for complex jobs.</p></div>
-        </div>
-        <div class="help-card">
-          <h4>&#128222; Contact Card</h4>
-          <p>Click any pin to see the full contact card including name, company, phone (tap to call), email (tap to open), territory, travel radius, and internal notes. Use <strong>"Suggest an Edit"</strong> at the bottom of the card to propose any updates.</p>
-        </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> Pins close together will be slightly offset on the map so they're all clickable. Zoom in to separate them.</div>
-      </div>
-
-      <!-- SEARCH & FILTER -->
-      <div class="help-section" id="tab-search">
-        <div class="help-card">
-          <h4>&#128269; Search Bar</h4>
-          <p>Type any part of a tech's name, company, city, or state. The map updates instantly showing only matching techs. Clear the box to show all.</p>
-        </div>
-        <div class="help-card">
-          <h4>&#127758; Territory Filter</h4>
-          <p>Use the dropdown to filter by territory — <strong>Central US</strong>, <strong>East Coast</strong>, or <strong>West Coast</strong>. Combined with the search bar, this narrows your list quickly for regional dispatch decisions.</p>
-        </div>
-        <div class="help-card">
-          <h4>&#11044; Rating Filter Buttons</h4>
-          <p>Click <strong>Top Tech</strong>, <strong>Good</strong>, or <strong>Support</strong> to show only techs at that rating level. Click <strong>All</strong> to reset. The badges in the header update to show counts for your current view.</p>
-        </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> Combine filters — for example, filter to "Top Tech" + "East Coast" to quickly find your best East Coast resources.</div>
-      </div>
-
-      <!-- FIND NEAREST -->
-      <div class="help-section" id="tab-nearest">
-        <div class="help-card">
-          <h4>&#128205; Find Nearest Techs</h4>
-          <div class="step"><div class="step-num">1</div><p>Type a city name, full address, or ZIP code in the <strong>Find Nearest Techs</strong> bar at the top.</p></div>
-          <div class="step"><div class="step-num">2</div><p>Select <strong>Top 3, 5, or 10</strong> from the dropdown.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Click <strong>Find Nearest</strong> or press Enter.</p></div>
-          <div class="step"><div class="step-num">4</div><p>The map zooms to show a red dot at your location with dashed blue lines to the nearest techs.</p></div>
-          <div class="step"><div class="step-num">5</div><p>A results panel slides in on the right showing techs ranked by distance. <strong>Click any card</strong> to fly to that tech on the map.</p></div>
-          <div class="step"><div class="step-num">6</div><p>Click <strong>✕ Clear</strong> to reset back to the full map.</p></div>
-        </div>
-        <div class="help-card">
-          <h4>&#128664; Travel Cost Estimates</h4>
-          <p>Each result shows estimated drive time, one-way cost, and round-trip cost calculated at <strong>$0.76/mile</strong>. Round-trip cost turns <strong style="color:#fc8181">red ⚠</strong> when it exceeds $200 to flag higher-cost dispatches.</p>
-        </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> Distance is straight-line (as the crow flies). Actual drive time may vary based on roads. Use as a relative comparison, not an exact ETA.</div>
-      </div>
-
-      <!-- RADIUS & GAPS -->
-      <div class="help-section" id="tab-radius">
-        <div class="help-card">
-          <h4>&#9711; Coverage Radius</h4>
-          <p>Click the <strong>⊙ Radius</strong> button in the toolbar to show each tech's preferred travel range as a dashed circle on the map. The circle color matches their rating tier. Toggle off to hide all circles.</p>
-          <div class="help-tip" style="margin-top:8px">&#128161; Use Radius + Find Nearest together to confirm a tech's circle actually covers the job site before dispatching.</div>
-        </div>
-        <div class="help-card">
-          <h4>&#9888; Gap Analysis</h4>
-          <p>Click <strong>⚠ Gap Analysis</strong> to open a side panel that grades every US state by coverage level:</p>
-          <div class="rating-row" style="margin-top:8px"><div class="rating-dot" style="background:#E24B4A"></div><p><strong style="color:#fc8181">No Coverage</strong> &mdash; Zero techs in this state. Priority recruit target.</p></div>
-          <div class="rating-row"><div class="rating-dot" style="background:#BA7517"></div><p><strong style="color:#f6ad55">Low Coverage</strong> &mdash; Only 1 tech, no Top Tech. Vulnerable if that tech is unavailable.</p></div>
-          <div class="rating-row"><div class="rating-dot" style="background:#1D9E75"></div><p><strong style="color:#68d391">Covered</strong> &mdash; 2+ techs or at least one Top Tech. Good redundancy.</p></div>
-          <p style="font-size:12px;color:#a0aec0;margin-top:8px">Gap Analysis updates live based on your current filters — for example, filter to Top Tech only to see which states have zero top-rated coverage.</p>
-        </div>
-      </div>
-
-      <!-- MANAGE TECHS -->
-      <div class="help-section" id="tab-manage">
-        <div style="height:1px"></div>
-        <div class="help-card">
-          <h4>&#43; Add New Tech</h4>
-          <div class="step"><div class="step-num">1</div><p>Click <strong>+ Add Tech</strong> in the toolbar.</p></div>
-          <div class="step"><div class="step-num">2</div><p>Fill in the tech's name, contact info, rating, territory, and travel range.</p></div>
-          <div class="step"><div class="step-num">3</div><p>If the tech exists in Salesforce, paste their <strong>Salesforce Contact Link</strong> in the field provided so the record stays connected.</p></div>
-          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. The tech goes into the review queue &mdash; they are NOT live on the map yet.</p></div>
-          <div class="step"><div class="step-num">5</div><p>An admin opens the <strong>Review Panel</strong> (password required) to approve or reject.</p></div>
-        </div>
-        <div class="help-card">
-          <h4>&#9998; Suggest an Edit</h4>
-          <div class="step"><div class="step-num">1</div><p>Click any pin to open the contact card.</p></div>
-          <div class="step"><div class="step-num">2</div><p>Click <strong>&#9998; Suggest an Edit</strong> at the bottom of the card.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Update any fields &mdash; phone, email, rating, Salesforce link, notes, etc.</p></div>
-          <div class="step"><div class="step-num">4</div><p>Click <strong>Submit for Review</strong>. Changes go to the queue, not live immediately.</p></div>
-        </div>
-        <div class="help-card">
-          <h4>&#128203; Review Panel &nbsp;<span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px">&#128274; Admin Only</span></h4>
-          <p>Click <strong>&#128203; Review</strong> in the toolbar &mdash; a red badge appears when items are pending. Enter the admin password when prompted. Approve or reject each submission. Approved items are held until exported.</p>
-        </div>
-        <div class="help-card">
-          <h4>&#11015; Export to CSV for Salesforce &nbsp;<span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px">&#128274; Admin Only</span></h4>
-          <p>After approving, click <strong>&#11015; Export to CSV for Salesforce</strong> in the Review Panel. Downloads a formatted CSV with all approved changes including Salesforce links, ready to import into Salesforce contacts. The queue clears automatically after export.</p>
-        </div>
-        <div class="help-tip">&#128161; <strong>Tip:</strong> The review queue saves in your browser between sessions. Export regularly so approved changes get into Salesforce and are not lost if you clear your browser cache.</div>
-        <div style="height:20px"></div>
-      </div>
-    </div>
-    <div class="help-footer">
-      <span>&#128205; Tech Network Map v2.0 &middot; Last updated Aug 2026</span>
-      <button onclick="closeHelp()" style="background:#2b6cb0;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">Got it &#10003;</button>
-    </div>
-  </div>
-</div>
-
-<script>
-function openHelp(){document.getElementById('help-overlay').style.display='flex';switchTab('overview');}
-function closeHelp(){document.getElementById('help-overlay').style.display='none';}
-function switchTab(id){
-  document.querySelectorAll('.help-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.help-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  const tabs=document.querySelectorAll('.help-tab');
-  const order=['overview','pins','search','nearest','radius','manage'];
-  tabs[order.indexOf(id)].classList.add('active');
-}
-document.getElementById('help-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('help-overlay'))closeHelp();});
-</script>
-
-
-<!-- Admin Auth Overlay -->
-<div id="admin-overlay">
-  <div id="admin-box">
-    <div style="font-size:32px;margin-bottom:10px">&#128274;</div>
-    <h3>Admin Access Required</h3>
-    <p>Enter the admin password to access the Review Panel</p>
-    <input id="admin-pw" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkAdmin()"/>
-    <div id="admin-err">Incorrect password. Try again.</div>
-    <div id="admin-btns">
-      <button class="btn-admin-cancel" onclick="closeAdminOverlay()">Cancel</button>
-      <button class="btn-admin-ok" onclick="checkAdmin()">&#128274; Unlock</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── ADMIN AUTH ──────────────────────────────────────────
-// Change this password to whatever you want
-const ADMIN_PASSWORD = 'PlayOn2019';
-let isAdmin = false;
-let pendingAdminAction = null;
-
-function requireAdmin(action) {
-  if (isAdmin) { action(); return; }
-  pendingAdminAction = action;
-  document.getElementById('admin-pw').value = '';
-  document.getElementById('admin-err').style.display = 'none';
-  document.getElementById('admin-overlay').style.display = 'flex';
-  setTimeout(() => document.getElementById('admin-pw').focus(), 100);
-}
-
-function checkAdmin() {
-  const pw = document.getElementById('admin-pw').value;
-  if (pw === ADMIN_PASSWORD) {
-    isAdmin = true;
-    document.getElementById('admin-overlay').style.display = 'none';
-    document.getElementById('admin-err').style.display = 'none';
-    // Show admin badge on Review button
-    document.querySelector('.admin-badge').style.display = 'inline';
-    if (pendingAdminAction) { pendingAdminAction(); pendingAdminAction = null; }
-  } else {
-    document.getElementById('admin-err').style.display = 'block';
-    document.getElementById('admin-pw').value = '';
-    document.getElementById('admin-pw').focus();
-  }
-}
-
-function closeAdminOverlay() {
-  document.getElementById('admin-overlay').style.display = 'none';
-  pendingAdminAction = null;
-}
-
-// Override openPending to require admin
-const _openPending = openPending;
-window.openPending = function() { requireAdmin(_openPending); };
-
-// Override approvePending and rejectPending to require admin
-const _approvePending = approvePending;
-window.approvePending = function(idx) { requireAdmin(() => _approvePending(idx)); };
-
-const _rejectPending = rejectPending;
-window.rejectPending = function(idx) { requireAdmin(() => _rejectPending(idx)); };
-
-// Override exportCSV to require admin
-const _exportCSV = exportCSV;
-window.exportCSV = function() { requireAdmin(_exportCSV); };
+setTimeout(()=>{if(map)map.invalidateSize();},200);
+window.addEventListener('resize',()=>{if(map)map.invalidateSize();});
 </script>
 
 
 <!-- Multi-Site Modal -->
-<div id="ms-overlay" onclick="if(event.target===this)closeMultiSite()">
+<div id="ms-overlay" onclick="if(event.target===this)closeMultiSite()" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;display:none;align-items:center;justify-content:center">
   <div id="ms-box">
-    <div id="ms-header">
+    <div id="ms-header" style="padding:14px 18px 10px;border-bottom:1px solid #2d3748;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
       <div>
-        <h2>&#127760; Multi-Site — Multi-School Planner</h2>
-        <div class="sub">Add multiple locations to find the nearest tech for each site</div>
+        <h2 style="font-size:15px;font-weight:700;color:#f7fafc">&#127760; Multi-Sites Planner</h2>
+        <div style="font-size:11px;color:#718096;margin-top:1px">Add multiple locations to find the nearest tech for each site</div>
       </div>
-      <button onclick="closeMultiSite()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer;padding:2px 8px">&#10005;</button>
+      <button onclick="closeMultiSite()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer">&#10005;</button>
     </div>
     <div id="ms-body">
-      <div id="ms-input-area">
+      <div id="ms-input-area" style="display:flex;gap:8px;margin-bottom:12px">
         <input id="ms-input" type="text" placeholder="Enter school name, address, city, or ZIP..." onkeydown="if(event.key==='Enter')addSite()"/>
         <button id="ms-add-btn" onclick="addSite()">&#43; Add Location</button>
       </div>
       <div id="ms-list"></div>
       <div id="ms-empty" style="text-align:center;padding:2rem;color:#718096;font-size:13px">
         &#127760; Add your first location above to get started.<br>
-        <span style="font-size:11px;margin-top:6px;display:block">Tip: You can enter a school name, full address, city, or ZIP code</span>
+        <span style="font-size:11px;margin-top:6px;display:block">Enter a school name, full address, city, or ZIP code</span>
       </div>
     </div>
-    <div id="ms-footer">
-      <button id="ms-map-btn" onclick="showOnMap()" style="display:none">&#128205; Show on Map</button>
-      <button id="ms-clear-btn" onclick="clearSites()" style="display:none">&#10005; Clear All</button>
-      <button id="ms-export-btn" onclick="exportSites()" style="display:none">&#11015; Export to CSV</button>
+    <div id="ms-footer" style="padding:10px 16px;border-top:1px solid #2d3748;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+      <button id="ms-map-btn" onclick="showOnMap()" style="display:none;background:#276749;border:none;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">&#128205; Show on Map</button>
+      <button id="ms-clear-btn" onclick="clearSites()" style="display:none;background:transparent;border:1px solid #4a5568;color:#a0aec0;padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer">&#10005; Clear All</button>
+      <button id="ms-export-btn" onclick="exportSites()" style="display:none;background:#2b6cb0;border:none;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto">&#11015; Export to CSV</button>
     </div>
   </div>
 </div>
-
-<script>
-// ── JOB SITES ─────────────────────────────────────────────────────────────────
-const PIN_COLORS_JS = ['#e53e3e','#dd6b20','#d69e2e','#38a169','#3182ce','#805ad5','#d53f8c','#2c7a7b','#e53e3e','#744210'];
-let multiSites = []; // [{name, address, lat, lng, results:[]}]
-const multiSiteLayer = L.layerGroup().addTo(map);
-
-function openMultiSite() {
-  document.getElementById('ms-overlay').style.display = 'flex';
-  setTimeout(()=>document.getElementById('ms-input').focus(), 100);
-  renderJobSiteList();
-}
-function closeMultiSite() { document.getElementById('ms-overlay').style.display = 'none'; }
-
-async function addSite() {
-  const input = document.getElementById('ms-input');
-  const query = input.value.trim();
-  if (!query) return;
-  const btn = document.getElementById('ms-add-btn');
-  btn.disabled = true; btn.textContent = 'Searching...';
-
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=us&format=json&limit=1`;
-  try {
-    const r = await fetch(url, {headers:{'Accept-Language':'en'}});
-    const d = await r.json();
-    if (!d || !d[0]) {
-      alert('Location not found. Try a more specific address or ZIP code.');
-      btn.disabled = false; btn.textContent = '+ Add Site';
-      return;
-    }
-    const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
-    const displayName = d[0].display_name.split(',').slice(0,3).join(',').trim();
-    multiSites.push({name: query, address: displayName, lat, lng, results: findNearestForSite(lat, lng, 5)});
-    input.value = '';
-    renderJobSiteList();
-  } catch(e) {
-    alert('Error geocoding location. Check your connection and try again.');
-  }
-  btn.disabled = false; btn.textContent = '+ Add Site';
-}
-
-function findNearestForSite(lat, lng, topN) {
-  return allMarkers
-    .filter(m => m._tech._lat && m._tech._lng)
-    .map(m => {
-      const t = m._tech;
-      const miles = distMiles(lat, lng, t._lat, t._lng);
-      return {name:t.name, rating:t.rating, company:t.company, phone:t.phone, email:t.email, miles, time:estDrive(miles), cost:estCost(miles), rtCost:estCost(miles*2), rtOver:miles*.76*2>200, lat:t._lat, lng:t._lng, marker:m};
-    })
-    .sort((a,b) => a.miles - b.miles)
-    .slice(0, topN);
-}
-
-function renderJobSiteList() {
-  const list = document.getElementById('ms-list');
-  const empty = document.getElementById('ms-empty');
-  empty.style.display = multiSites.length ? 'none' : 'block';
-  ['ms-map-btn','ms-clear-btn','ms-export-btn'].forEach(id => {
-    document.getElementById(id).style.display = multiSites.length ? 'inline-block' : 'none';
-  });
-  list.innerHTML = '';
-  multiSites.forEach((site, si) => {
-    const col = PIN_COLORS_JS[si % PIN_COLORS_JS.length];
-    const card = document.createElement('div');
-    card.className = 'js-card';
-    const techRows = site.results.map((t,i) => {
-      const rc = RATING_COLOR[t.rating] || RATING_COLOR[3];
-      return `<div class="js-tech-row" onclick="flyToCoord(${t.lat},${t.lng})">
-        <div class="js-tech-rank" style="background:${rc.bg}">${t.rating}</div>
-        <div class="js-tech-name">${t.name}</div>
-        <div class="js-tech-dist">&#128664; ${t.time}</div>
-        <div class="js-tech-cost">${Math.round(t.miles)} mi &bull; ${t.cost}<span style="color:${t.rtOver?'#fc8181':'#68d391'}"> / ${t.rtCost} RT${t.rtOver?' &#9888;':''}</span></div>
-        <div class="js-tech-rating r${t.rating}" style="padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700">${t.rating}</div>
-      </div>`;
-    }).join('');
-    card.innerHTML = `
-      <div class="js-card-header">
-        <div class="js-num" style="background:${col}">${si+1}</div>
-        <div class="js-name">${site.name}</div>
-        <button class="js-remove" onclick="removeJobSite(${si})">&#10005;</button>
+<!-- Admin Auth Overlay -->
+<div id="admin-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:4000;display:none;align-items:center;justify-content:center">
+  <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;width:360px;padding:28px 28px 24px;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">&#128274;</div>
+    <h3 style="font-size:15px;font-weight:700;color:#f7fafc;margin-bottom:6px">Admin Access Required</h3>
+    <p style="font-size:12px;color:#718096;margin-bottom:18px">Enter the admin password to access the Review Panel</p>
+    <input id="admin-pw" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkAdmin()"
+      style="width:100%;background:#12161f;border:1px solid #4299e1;color:#e2e8f0;padding:9px 12px;border-radius:6px;font-size:14px;outline:none;text-align:center;letter-spacing:.1em;margin-bottom:10px"/>
+    <div id="admin-err" style="font-size:12px;color:#fc8181;margin-bottom:10px;display:none">Incorrect password. Try again.</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="closeAdminOverlay()" style="background:transparent;border:1px solid #4a5568;color:#a0aec0;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px">Cancel</button>
+      <button onclick="checkAdmin()" style="background:#2b6cb0;border:none;color:#fff;padding:8px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">&#128274; Unlock</button>
+    </div>
+  </div>
+</div>
+<!-- Help Modal -->
+<div id="help-overlay" onclick="if(event.target===this)closeHelp()" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:3000;display:none;align-items:center;justify-content:center">
+  <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:14px;width:680px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:16px 20px 12px;border-bottom:1px solid #2d3748;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <h2 style="font-size:15px;font-weight:700;color:#f7fafc">&#128205; How to Use the Tech Network Map</h2>
+        <div style="font-size:11px;color:#718096;margin-top:2px">v2.3 &middot; Third-Party Tech Network</div>
       </div>
-      <div class="js-status">&#128205; ${site.address}</div>
-      <div class="js-results">${techRows}</div>`;
-    list.appendChild(card);
-  });
-}
+      <button onclick="closeHelp()" style="background:transparent;border:none;color:#718096;font-size:20px;cursor:pointer">&#10005;</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px">
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#11088; Rating System</h4>
+        <div style="font-size:12px;color:#a0aec0;line-height:1.7">
+          &#11044; <strong style="color:#90cdf4">1 – Top Technician</strong> — Highest confidence. Dispatch first.<br>
+          &#11044; <strong style="color:#68d391">2 – Good</strong> — Reliable. Handles most work well.<br>
+          &#11044; <strong style="color:#f6ad55">3 – Needs Support</strong> — May need guidance. Use as backup.<br>
+          &#11044; <strong style="color:#fc8181">4 – Struggling</strong> — Use with caution.
+        </div>
+      </div>
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#128269; Find Nearest Techs</h4>
+        <p style="font-size:12px;color:#a0aec0;line-height:1.6">Enter a city, address, or ZIP in the Find Nearest bar. Select Top 3/5/10. Results show drive time, one-way and round-trip cost at $0.76/mile. Round-trip flags red when over $200.</p>
+      </div>
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#127970; Vendors Button</h4>
+        <p style="font-size:12px;color:#a0aec0;line-height:1.6">Click to cycle: <strong>Off → Show vendors → Vendors + Metro pins → Vendors only</strong>. When metro pins are active, use the selector bar to filter by individual vendor.</p>
+      </div>
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#43; Add Tech / &#9998; Suggest Edit</h4>
+        <p style="font-size:12px;color:#a0aec0;line-height:1.6">Use + Add Tech to submit new techs. Click any pin and use "Suggest an Edit" to update info. All submissions go to the admin Review queue before going live.</p>
+      </div>
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#128203; Review Panel <span style="font-size:10px;background:#0f3460;color:#90cdf4;border-radius:8px;padding:1px 7px">&#128274; Admin Only</span></h4>
+        <p style="font-size:12px;color:#a0aec0;line-height:1.6">Admin password required. Approve or reject submissions. Export approved changes as CSV for Salesforce import.</p>
+      </div>
+      <div style="background:#12161f;border:1px solid #2d3748;border-radius:8px;padding:12px 14px">
+        <h4 style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:6px">&#127760; Multi-Sites Planner</h4>
+        <p style="font-size:12px;color:#a0aec0;line-height:1.6">Add multiple school locations and find the nearest tech for each. Shows drive time and travel cost. Export results to CSV for scheduling.</p>
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #2d3748;display:flex;justify-content:flex-end;flex-shrink:0">
+      <button onclick="closeHelp()" style="background:#2b6cb0;border:none;color:#fff;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">Got it &#10003;</button>
+    </div>
+  </div>
+</div>
+<script>
+function openHelp(){document.getElementById('help-overlay').style.display='flex';}
+function closeHelp(){document.getElementById('help-overlay').style.display='none';}
 
-function removeJobSite(idx) {
-  multiSites.splice(idx, 1);
-  renderJobSiteList();
-  showOnMap();
-}
+const ADMIN_PASSWORD = 'PlayOn2019';
+let isAdmin = false;
+let pendingAdminAction = null;
 
-function flyToCoord(lat, lng) {
-  map.setView([lat, lng], 9, {animate:true});
-  closeMultiSite();
+function requireAdmin(action){
+  if(isAdmin){action();return;}
+  pendingAdminAction=action;
+  document.getElementById('admin-pw').value='';
+  document.getElementById('admin-err').style.display='none';
+  document.getElementById('admin-overlay').style.display='flex';
+  setTimeout(()=>document.getElementById('admin-pw').focus(),100);
 }
-
-function showOnMap() {
-  multiSiteLayer.clearLayers();
-  if (!multiSites.length) return;
-  const bounds = [];
-  multiSites.forEach((site, si) => {
-    const col = PIN_COLORS_JS[si % PIN_COLORS_JS.length];
-    const icon = L.divIcon({
-      html:`<div style="display:flex;flex-direction:column;align-items:center">
-        <div style="background:${col};color:#fff;width:28px;height:28px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.4)">${si+1}</div>
-        <div style="width:2px;height:8px;background:${col}"></div>
-      </div>`,
-      iconSize:[28,36], iconAnchor:[14,36], popupAnchor:[0,-38], className:''
-    });
-    const nearest = site.results[0];
-    const popup = `<div style="font-size:13px;font-weight:700;color:#f7fafc;margin-bottom:4px">&#127979; ${site.name}</div>
-      <div style="font-size:11px;color:#a0aec0;margin-bottom:8px">${site.address}</div>
-      ${site.results.slice(0,3).map((t,i)=>`
-        <div style="display:flex;gap:6px;align-items:center;font-size:12px;margin-bottom:4px;color:#cbd5e0">
-          <span style="font-weight:700;color:#68d391">#${i+1}</span>
-          <span style="flex:1">${t.name}</span>
-          <span style="color:#68d391;font-weight:600">${t.time}</span>
-          <span style="color:#a0aec0">${Math.round(t.miles)}mi</span>
-        </div>`).join('')}`;
-    L.marker([site.lat, site.lng], {icon, zIndexOffset:600})
-      .bindPopup(popup, {maxWidth:280})
-      .addTo(multiSiteLayer);
-    bounds.push([site.lat, site.lng]);
-    // Draw line to nearest tech
-    if (nearest) {
-      L.polyline([[site.lat, site.lng],[nearest.lat, nearest.lng]], {
-        color: col, weight:3, opacity:.9, dashArray:'8,4'
-      }).addTo(multiSiteLayer);
-      bounds.push([nearest.lat, nearest.lng]);
-    }
-  });
-  if (bounds.length) map.fitBounds(L.latLngBounds(bounds), {padding:[40,40]});
-  closeMultiSite();
+function checkAdmin(){
+  const pw=document.getElementById('admin-pw').value;
+  if(pw===ADMIN_PASSWORD){
+    isAdmin=true;
+    document.getElementById('admin-overlay').style.display='none';
+    document.querySelector('.admin-badge') && (document.querySelector('.admin-badge').style.display='inline');
+    if(pendingAdminAction){pendingAdminAction();pendingAdminAction=null;}
+  } else {
+    document.getElementById('admin-err').style.display='block';
+    document.getElementById('admin-pw').value='';
+    document.getElementById('admin-pw').focus();
+  }
 }
-
-function clearSites() {
-  multiSites = [];
-  multiSiteLayer.clearLayers();
-  renderJobSiteList();
+function closeAdminOverlay(){
+  document.getElementById('admin-overlay').style.display='none';
+  pendingAdminAction=null;
 }
-
-function exportSites() {
-  if (!multiSites.length) return;
-  const headers = ['Site #','School/Location','Address','Nearest Tech Rank','Tech Name','Company','Phone','Drive Time','Miles','One Way Cost','Round Trip Cost','Rating'];
-  const rows = [];
-  multiSites.forEach((site, si) => {
-    site.results.forEach((t, ti) => {
-      rows.push([
-        si+1, site.name, site.address,
-        ti+1, t.name, t.company||'', t.phone||'',
-        t.time, Math.round(t.miles), t.cost, t.rtCost, t.rating
-      ]);
-    });
-  });
-  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `multi_site_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-}
+window.addEventListener('load', function(){
+  const _openPending=window.openPending||function(){};
+  window.openPending=function(){requireAdmin(_openPending);};
+  const _exportCSV=window.exportCSV||function(){};
+  window.exportCSV=function(){requireAdmin(_exportCSV);};
+});
 </script>
-
 </body>
 </html>
